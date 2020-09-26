@@ -1,0 +1,24 @@
+#
+# CMake package configuration file for crystal
+#
+# Defines the target "crystal::crystal"
+# Add this to your target_link_libraries() call to depend on crystal.
+#
+# Also sets the variables CRYSTAL_INCLUDE_DIR and CRYSTAL_LIBRARY.
+# However, in most cases using the crystal::crystal target is sufficient,
+# and you won't need these variables.
+#
+
+@PACKAGE_INIT@
+
+set_and_check(CRYSTAL_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+
+if(NOT TARGET crystal::crystal)
+  include(${CMAKE_CURRENT_LIST_DIR}/crystal-targets.cmake)
+endif()
+
+set(CRYSTAL_LIBRARY crystal::crystal)
+
+if(NOT crystal_FIND_QUIETLY)
+  message(STATUS "Found crystal: ${PACKAGE_PREFIX_DIR}")
+endif()

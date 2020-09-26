@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+/_build
+/_deps
+/crystal/crystal-config.h
