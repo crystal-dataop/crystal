@@ -64,9 +64,13 @@ configure_file(
 # Work on all sub directories
 build_directory(crystal _base)
 build_directory(crystal/foundation)
+build_directory(crystal/math)
+build_directory(crystal/serializer)
+build_directory(crystal/type)
 
 add_library(crystal
   $<TARGET_OBJECTS:crystal_foundation>
+  $<TARGET_OBJECTS:crystal_type>
 )
 
 install(TARGETS crystal
@@ -79,6 +83,8 @@ install(TARGETS crystal
 # Test
 if(GTEST_FOUND)
   enable_testing()
+  add_subdirectory(crystal/serializer/test)
+  add_subdirectory(crystal/type/test)
 endif()
 
 # CmakeConfig
