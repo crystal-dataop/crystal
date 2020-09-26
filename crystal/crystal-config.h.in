@@ -6,3 +6,5 @@
 #define CRYSTAL_VERSION "@PROJECT_VERSION_MAJOR@.@PROJECT_VERSION_MINOR@.@PROJECT_VERSION_PATCH@"
 
 /* compile tests for keyword, lib, function, ... */
+
+#cmakedefine CRYSTAL_HAVE_XSI_STRERROR_R 1

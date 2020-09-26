@@ -5,13 +5,15 @@ cmake_minimum_required(VERSION 3.6)
 # Define project
 project(crystal VERSION 0.1.0)
 
-include(GNUInstallDirs)
-
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
+
+include(GNUInstallDirs)
+include(Functions)
 
 # Required packages
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
+find_package(DoubleConversion REQUIRED)
 
 # Optional packages
 find_package(GTest)
@@ -28,6 +30,7 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # Link libraries
 link_libraries(
+  ${DOUBLE_CONVERSION_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
 )
@@ -35,11 +38,23 @@ link_libraries(
 include_directories(
   ${PROJECT_SOURCE_DIR}
   ${CMAKE_PREFIX_PATH}/include
+  ${DOUBLE_CONVERSION_INCLUDE_DIR}
 )
 
 # Check and setup configurations
 include(CheckCXXSourceCompiles REQUIRED)
 include(CheckFunctionExists REQUIRED)
+
+check_cxx_source_compiles("
+  #include <string.h>
+  #include <errno.h>
+  int main() {
+    char buf[1024];
+    buf[0] = 0;
+    int ret = strerror_r(ENOMEM, buf, sizeof(buf));
+    return ret;
+  }"
+  CRYSTAL_HAVE_XSI_STRERROR_R)
 
 configure_file(
   ${PROJECT_SOURCE_DIR}/crystal/crystal-config.h.in
@@ -47,8 +62,11 @@ configure_file(
 )
 
 # Work on all sub directories
+build_directory(crystal _base)
+build_directory(crystal/foundation)
 
 add_library(crystal
+  $<TARGET_OBJECTS:crystal_foundation>
 )
 
 install(TARGETS crystal
