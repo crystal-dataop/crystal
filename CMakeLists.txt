@@ -14,6 +14,7 @@ include(Functions)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
 find_package(DoubleConversion REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 # Optional packages
 find_package(GTest)
@@ -31,6 +32,7 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 # Link libraries
 link_libraries(
   ${DOUBLE_CONVERSION_LIBRARY}
+  ${OPENSSL_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
 )
@@ -64,12 +66,14 @@ configure_file(
 # Work on all sub directories
 build_directory(crystal _base)
 build_directory(crystal/foundation)
+build_directory(crystal/foundation/http)
 build_directory(crystal/math)
 build_directory(crystal/serializer)
 build_directory(crystal/type)
 
 add_library(crystal
   $<TARGET_OBJECTS:crystal_foundation>
+  $<TARGET_OBJECTS:crystal_foundation_http>
   $<TARGET_OBJECTS:crystal_type>
 )
 
@@ -79,6 +83,7 @@ install(TARGETS crystal
 )
 
 # Binary
+add_subdirectory(crystal/foundation/http/examples)
 
 # Test
 if(GTEST_FOUND)
