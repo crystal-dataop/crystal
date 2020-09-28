@@ -264,7 +264,7 @@ std::size_t dynamic::size() const {
   if (auto* str = get_nothrow<std::string>()) {
     return str->size();
   }
-  throw TypeError("array/object", type());
+  throw TypeError("array/object/string", type());
 }
 
 dynamic::iterator dynamic::erase(const_iterator first, const_iterator last) {

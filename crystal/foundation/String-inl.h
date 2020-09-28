@@ -45,14 +45,14 @@ inline char delimFront(char c) {
   return c;
 }
 inline char delimFront(std::string_view s) {
-  assert(!s.empty() && s.start() != nullptr);
+  assert(!s.empty() && s.begin() != nullptr);
   return *s.begin();
 }
 
 template <class OutStringT, class DelimT, class OutputIterator>
 void internalSplit(DelimT delim, std::string_view sv, OutputIterator out,
     bool ignoreEmpty) {
-  assert(sv.empty() || sv.start() != nullptr);
+  assert(sv.empty() || sv.begin() != nullptr);
 
   const char* s = sv.begin();
   const size_t strSize = sv.size();

@@ -2,5 +2,6 @@
 
 test_sources(
   DynamicEncodingContainerTest.cpp
+  DynamicEncodingRecordTest.cpp
   DynamicEncodingTest.cpp
 )

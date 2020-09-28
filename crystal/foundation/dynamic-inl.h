@@ -775,13 +775,11 @@ CRYSTAL_DYNAMIC_DEC_TYPEINFO(dynamic::ObjectImpl, "object",  dynamic::OBJECT)
 template <class T>
 T dynamic::asImpl() const {
   switch (type()) {
-  case INT64:    return to<T>(*get_nothrow<int64_t>());
-  case DOUBLE:   return to<T>(*get_nothrow<double>());
-  case BOOL:     return to<T>(*get_nothrow<bool>());
-  case STRING:
-    return to<T>(*get_nothrow<std::string>());
-  default:
-    throw TypeError("int/double/bool/string", type());
+  case INT64:  return to<T>(*get_nothrow<int64_t>());
+  case DOUBLE: return to<T>(*get_nothrow<double>());
+  case BOOL:   return to<T>(*get_nothrow<bool>());
+  case STRING: return to<T>(*get_nothrow<std::string>());
+  default:     throw TypeError("int/double/bool/string", type());
   }
 }
 

@@ -22,6 +22,7 @@
 #include "crystal/foundation/Logging.h"
 #include "crystal/foundation/Traits.h"
 #include "crystal/foundation/json.h"
+#include "crystal/serializer/record/Record.h"
 #include "crystal/type/TypeTraits.h"
 
 namespace crystal {
@@ -87,6 +88,37 @@ decode(const dynamic& j, T& value) {
   checkType<T>(j);
   value = j.getString();
 }
+
+// IsArray
+//
+template <class T>
+typename std::enable_if<IsArray<T>::value, dynamic>::type
+encode(const T& value) {
+  dynamic j = dynamic::array;
+  for (size_t i = 0; i < value.size(); ++i) {
+    j.push_back(encode(value.get(i)));
+  }
+  return j;
+}
+
+template <class T>
+typename std::enable_if<IsArray<T>::value>::type
+decode(const dynamic& j, T& value) {
+  CRYSTAL_CHECK_EQ(j.size(), value.size());
+  for (size_t i = 0; i < j.size(); ++i) {
+    typename T::value_type v;
+    decode(j[i], v);
+    value.set(i, v);
+  }
+}
+
+// Record
+//
+inline dynamic encode(const Record& value) {
+  return value.toDynamic();
+}
+
+void decode(const dynamic& j, Record& value);
 
 // std::pair
 //

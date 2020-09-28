@@ -870,6 +870,7 @@ dynamic parseCson(std::string_view range) {
 std::string toCson(dynamic const& dyn) {
   json::serialization_opts opts;
   opts.conf_style = true;
+  opts.sort_keys = true;
   return json::serialize(dyn, opts);
 }
 
@@ -877,6 +878,7 @@ std::string toPrettyCson(dynamic const& dyn) {
   json::serialization_opts opts;
   opts.conf_style = true;
   opts.pretty_formatting = true;
+  opts.sort_keys = true;
   return json::serialize(dyn, opts);
 }
 

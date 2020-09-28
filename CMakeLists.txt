@@ -68,12 +68,17 @@ build_directory(crystal _base)
 build_directory(crystal/foundation)
 build_directory(crystal/foundation/http)
 build_directory(crystal/math)
+build_directory(crystal/memory)
 build_directory(crystal/serializer)
+build_directory(crystal/serializer/record)
 build_directory(crystal/type)
 
 add_library(crystal
   $<TARGET_OBJECTS:crystal_foundation>
   $<TARGET_OBJECTS:crystal_foundation_http>
+  $<TARGET_OBJECTS:crystal_memory>
+  $<TARGET_OBJECTS:crystal_serializer>
+  $<TARGET_OBJECTS:crystal_serializer_record>
   $<TARGET_OBJECTS:crystal_type>
 )
 
@@ -88,7 +93,9 @@ add_subdirectory(crystal/foundation/http/examples)
 # Test
 if(GTEST_FOUND)
   enable_testing()
+  add_subdirectory(crystal/memory/test)
   add_subdirectory(crystal/serializer/test)
+  add_subdirectory(crystal/serializer/record/test)
   add_subdirectory(crystal/type/test)
 endif()
 
