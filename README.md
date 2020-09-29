@@ -1,8 +1,11 @@
 # Crystal Data OP library
 
-Build:
+Crystal is a data operation library.
+
+Build & test:
 
 ```
 ./deps.sh
 ./build.sh
+cd _build && make test
 ```
