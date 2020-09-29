@@ -71,6 +71,9 @@ build_directory(crystal/math)
 build_directory(crystal/memory)
 build_directory(crystal/serializer)
 build_directory(crystal/serializer/record)
+build_directory(crystal/storage/builder)
+build_directory(crystal/storage/index)
+build_directory(crystal/storage/index/bitmap)
 build_directory(crystal/storage/kv)
 build_directory(crystal/strategy)
 build_directory(crystal/type)
@@ -81,6 +84,8 @@ add_library(crystal
   $<TARGET_OBJECTS:crystal_memory>
   $<TARGET_OBJECTS:crystal_serializer>
   $<TARGET_OBJECTS:crystal_serializer_record>
+  $<TARGET_OBJECTS:crystal_storage_index>
+  $<TARGET_OBJECTS:crystal_storage_index_bitmap>
   $<TARGET_OBJECTS:crystal_storage_kv>
   $<TARGET_OBJECTS:crystal_strategy>
   $<TARGET_OBJECTS:crystal_type>
@@ -100,6 +105,9 @@ if(GTEST_FOUND)
   add_subdirectory(crystal/memory/test)
   add_subdirectory(crystal/serializer/test)
   add_subdirectory(crystal/serializer/record/test)
+  add_subdirectory(crystal/storage/builder/test)
+  add_subdirectory(crystal/storage/index/test)
+  add_subdirectory(crystal/storage/index/bitmap/test)
   add_subdirectory(crystal/storage/kv/test)
   add_subdirectory(crystal/type/test)
 endif()
