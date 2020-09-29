@@ -72,6 +72,7 @@ build_directory(crystal/memory)
 build_directory(crystal/serializer)
 build_directory(crystal/serializer/record)
 build_directory(crystal/storage/kv)
+build_directory(crystal/strategy)
 build_directory(crystal/type)
 
 add_library(crystal
@@ -81,6 +82,7 @@ add_library(crystal
   $<TARGET_OBJECTS:crystal_serializer>
   $<TARGET_OBJECTS:crystal_serializer_record>
   $<TARGET_OBJECTS:crystal_storage_kv>
+  $<TARGET_OBJECTS:crystal_strategy>
   $<TARGET_OBJECTS:crystal_type>
 )
 
