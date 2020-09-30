@@ -19,40 +19,28 @@
 #include <map>
 #include <string>
 
-#include "crystal/serializer/record/RecordConfig.h"
+#include "crystal/storage/table/TableConfig.h"
 
 namespace crystal {
 
-class KVConfig {
+class TableGroupConfig {
  public:
-  KVConfig(const std::string& name = "")
-      : name_(name) {}
+  TableGroupConfig() {}
 
-  virtual bool parse(const dynamic& root,
-                     const RecordConfig& recordConfig);
+  bool parse(const dynamic& root);
 
   const std::string& name() const;
-  const std::string& key() const;
-  const FieldConfig& keyConfig() const;
-  const RecordConfig& fields() const;
-  size_t bucket() const;
-  uint16_t segment() const;
+  const std::string& version() const;
+  const std::map<std::string, TableConfig>& tableConfigs() const;
 
- protected:
-  bool parse(const dynamic& root,
-             const RecordConfig& recordConfig,
-             const std::string& valueName,
-             bool valueIsOptional);
+  DataType getRelatedFieldType(const FieldConfig& field) const;
 
  private:
-  static constexpr size_t kBucketSize = 1ul << 24;
+  bool checkRelated();
 
   std::string name_;
-  std::string key_;
-  FieldConfig keyConfig_;
-  RecordConfig fields_;
-  size_t bucket_{kBucketSize};
-  uint16_t segment_{1};
+  std::string version_;
+  std::map<std::string, TableConfig> tableConfigs_;
 };
 
 }  // namespace crystal

@@ -97,17 +97,15 @@ BaseLogger::BaseLogger(const std::string& name)
     splitSize_(0),
     async_(false) {
   handle_ = std::thread(&BaseLogger::run, this);
-  setThreadName(handle_.native_handle(), "LogThread");
+  handle_.detach();
+  setThreadName(handle_.get_id(), "LogThread");
 }
 
 BaseLogger::~BaseLogger() {
   close();
-  handle_.join();
 }
 
 void BaseLogger::run() {
-  using namespace std::placeholders;
-
   while (true) {
     queue_.sweep([&](std::string&& message) {
       write(std::move(message));

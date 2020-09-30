@@ -1,0 +1,38 @@
+{
+  name="restaurant",
+  version="1.0",
+  table={
+    menu={
+      record=[
+        { tag=1, name="menuId", type="uint64" },
+        { tag=2, name="status", type="int32", bits=4, default=1 },
+        { tag=3, name="keyword", type="string" },
+        { tag=4, name="content", type="string" },
+        { tag=5, name="food", type="string", count=0 }
+      ],
+      key="menuId",
+      value=["menuId", "status", "content", "food"],
+      bucket=10000,
+      segment=2,
+      index=[
+        {
+          type="bitmap",
+          segment=1,
+          key="status"
+        }
+      ]
+    },
+    food={
+      record=[
+        { tag=1, name="foodId", type="uint64" },
+        { tag=2, name="status", type="int32", bits=4, default=1 },
+        { tag=3, name="name", type="string" },
+        { tag=4, name="desc", type="string" },
+        { tag=5, name="price", type="float" },
+        { tag=6, name="menuId", type="related", table="menu" }
+      ],
+      key="foodId",
+      value="*"
+    }
+  }
+}

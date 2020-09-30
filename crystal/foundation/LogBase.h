@@ -33,13 +33,11 @@ namespace crystal {
 namespace logging {
 
 enum LogSeverity {
-  // framework
-  LOG_V5      = -5, // coroutine
-  LOG_V4      = -4, // data
-  LOG_V3      = -3, // protocol, plugin
-  LOG_V2      = -2, // event, task
-  LOG_V1      = -1, // net, common
-  // application
+  LOG_V5      = -5,
+  LOG_V4      = -4,
+  LOG_V3      = -3,
+  LOG_V2      = -2,
+  LOG_V1      = -1,
   LOG_DEBUG   = 0,
   LOG_INFO    = 1,
   LOG_WARNING = 2,

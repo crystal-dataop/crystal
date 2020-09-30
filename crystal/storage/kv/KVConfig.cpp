@@ -45,6 +45,7 @@ bool KVConfig::parse(
     return false;
   }
   bucket_ = root.getDefault("bucket", kBucketSize).getInt();
+  segment_ = root.getDefault("segment", 1).getInt();
   auto value = root.getDefault(valueName);
   if (value.empty()) {
     if (valueIsOptional) {
@@ -96,6 +97,10 @@ const RecordConfig& KVConfig::fields() const {
 
 size_t KVConfig::bucket() const {
   return bucket_;
+}
+
+uint16_t KVConfig::segment() const {
+  return segment_;
 }
 
 }  // namespace crystal

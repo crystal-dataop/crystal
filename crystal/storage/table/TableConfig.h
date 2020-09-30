@@ -19,40 +19,32 @@
 #include <map>
 #include <string>
 
-#include "crystal/serializer/record/RecordConfig.h"
+#include "crystal/storage/index/IndexConfig.h"
+#include "crystal/storage/kv/KVConfig.h"
 
 namespace crystal {
 
-class KVConfig {
+class TableConfig {
  public:
-  KVConfig(const std::string& name = "")
-      : name_(name) {}
+  TableConfig(const std::string& name = "")
+      : name_(name),
+        kvConfig_(name) {}
 
-  virtual bool parse(const dynamic& root,
-                     const RecordConfig& recordConfig);
+  bool parse(const dynamic& root);
 
   const std::string& name() const;
-  const std::string& key() const;
-  const FieldConfig& keyConfig() const;
-  const RecordConfig& fields() const;
-  size_t bucket() const;
-  uint16_t segment() const;
-
- protected:
-  bool parse(const dynamic& root,
-             const RecordConfig& recordConfig,
-             const std::string& valueName,
-             bool valueIsOptional);
+  const RecordConfig& recordConfig() const;
+  const KVConfig& kvConfig() const;
+  const std::map<std::string, IndexConfig>& indexConfigs() const;
+  const IndexConfig& indexConfig(const std::string& key) const;
+  const std::map<std::string, std::string>& relatedTables() const;
 
  private:
-  static constexpr size_t kBucketSize = 1ul << 24;
-
   std::string name_;
-  std::string key_;
-  FieldConfig keyConfig_;
-  RecordConfig fields_;
-  size_t bucket_{kBucketSize};
-  uint16_t segment_{1};
+  RecordConfig recordConfig_;
+  KVConfig kvConfig_;
+  std::map<std::string, IndexConfig> indexConfigs_;
+  std::map<std::string, std::string> relatedTables_;
 };
 
 }  // namespace crystal
