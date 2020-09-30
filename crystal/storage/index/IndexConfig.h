@@ -27,8 +27,7 @@ class IndexConfig : public KVConfig {
  public:
   IndexConfig() : KVConfig() {}
 
-  bool parse(const dynamic& root,
-             const RecordConfig& recordConfig) override;
+  bool parse(const dynamic& root, const RecordConfig& recordConfig) override;
 
   const std::string& type() const;
 

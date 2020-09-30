@@ -3,7 +3,8 @@
 test_sources(
   ExtendedTableTest.cpp
   FieldIndexTest.cpp
-  #TableFactoryTest.cpp
+  TableFactoryTest.cpp
+  TableGroupConfigTest.cpp
   TableGroupTest.cpp
   TableTest.cpp
 )

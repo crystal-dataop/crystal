@@ -54,9 +54,9 @@ class Table {
    */
 
   size_t getKVSegmentCount() const;
-  KV* getKVSegment(uint16_t seg) const;
-  KV* getKVSegmentById(uint64_t id) const;
-  KV* getKVSegmentByKey(uint64_t key) const;
+  KV* getKV(uint16_t seg) const;
+  KV* getKVById(uint64_t id) const;
+  KV* getKVByKey(uint64_t key) const;
 
   uint64_t find(uint64_t key) const;
   bool insert(uint64_t key, uint64_t id);
@@ -66,12 +66,9 @@ class Table {
    * Index
    */
 
-  const std::vector<std::unique_ptr<Index>>*
-  getIndexSegments(const std::string& index) const;
-
   size_t getIndexSegmentCount(const std::string& index) const;
-  Index* getIndexSegment(const std::string& index, uint16_t seg) const;
-  Index* getIndexSegmentByToken(const std::string& index, uint64_t token) const;
+  Index* getIndex(const std::string& index, uint16_t seg) const;
+  Index* getIndexByToken(const std::string& index, uint64_t token) const;
 
   AnyPostingList getPostingList(const std::string& index, uint64_t token) const;
 
@@ -121,16 +118,16 @@ inline size_t Table::getKVSegmentCount() const {
   return kvs_.size();
 }
 
-inline KV* Table::getKVSegment(uint16_t seg) const {
+inline KV* Table::getKV(uint16_t seg) const {
   return seg < kvs_.size() ? kvs_[seg].get() : nullptr;
 }
 
-inline KV* Table::getKVSegmentById(uint64_t id) const {
-  return getKVSegment(id >> 32);
+inline KV* Table::getKVById(uint64_t id) const {
+  return getKV(id >> 32);
 }
 
-inline KV* Table::getKVSegmentByKey(uint64_t key) const {
-  return !kvs_.empty() ? getKVSegment(key % kvs_.size()) : nullptr;
+inline KV* Table::getKVByKey(uint64_t key) const {
+  return !kvs_.empty() ? getKV(key % kvs_.size()) : nullptr;
 }
 
 }  // namespace crystal

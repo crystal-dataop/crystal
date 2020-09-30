@@ -239,26 +239,19 @@ bool Table::erase(uint64_t key) {
   return true;
 }
 
-const std::vector<std::unique_ptr<Index>>*
-Table::getIndexSegments(const std::string& index) const {
-  auto it = indexMap_.find(index);
-  return it != indexMap_.end() ? &it->second : nullptr;
-}
-
 size_t Table::getIndexSegmentCount(const std::string& index) const {
   auto it = indexMap_.find(index);
   return it != indexMap_.end() ? it->second.size() : 0;
 }
 
-Index* Table::getIndexSegment(const std::string& index, uint16_t seg) const {
+Index* Table::getIndex(const std::string& index, uint16_t seg) const {
   auto it = indexMap_.find(index);
   return it != indexMap_.end()
       ? (seg < it->second.size()
          ? it->second[seg].get() : nullptr) : nullptr;
 }
 
-Index* Table::getIndexSegmentByToken(
-    const std::string& index, uint64_t token) const {
+Index* Table::getIndexByToken(const std::string& index, uint64_t token) const {
   auto it = indexMap_.find(index);
   return it != indexMap_.end()
       ? it->second[token % it->second.size()].get()
@@ -267,7 +260,7 @@ Index* Table::getIndexSegmentByToken(
 
 AnyPostingList Table::getPostingList(
     const std::string& index, uint64_t token) const {
-  Index* idx = getIndexSegmentByToken(index, token);
+  Index* idx = getIndexByToken(index, token);
   return idx ? idx->getPostingList(token) : std::monostate();
 }
 

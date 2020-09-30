@@ -14,27 +14,23 @@
  * limitations under the License.
  */
 
-#include "crystal/storage/index/IndexConfig.h"
+#pragma once
 
-#include "crystal/foundation/Logging.h"
+#include <atomic>
+#include <cstdint>
 
 namespace crystal {
 
-bool IndexConfig::parse(const dynamic& root, const RecordConfig& recordConfig) {
-  if (!KVConfig::parse(root, recordConfig, "payload", true)) {
-    return false;
-  }
-  auto type = root.getDefault("type");
-  if (type.empty()) {
-    CRYSTAL_LOG(ERROR) << "miss type: " << toCson(root);
-    return false;
-  }
-  type_ = type.getString();
-  return true;
-}
+class IdGenerator {
+ public:
+  IdGenerator() {}
 
-const std::string& IndexConfig::type() const {
-  return type_;
-}
+  uint32_t generate() {
+    return id_++;
+  }
+
+ private:
+  std::atomic<uint32_t> id_{1};
+};
 
 }  // namespace crystal

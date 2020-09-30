@@ -85,6 +85,7 @@ add_library(crystal
   $<TARGET_OBJECTS:crystal_memory>
   $<TARGET_OBJECTS:crystal_serializer>
   $<TARGET_OBJECTS:crystal_serializer_record>
+  $<TARGET_OBJECTS:crystal_storage_builder>
   $<TARGET_OBJECTS:crystal_storage_index>
   $<TARGET_OBJECTS:crystal_storage_index_bitmap>
   $<TARGET_OBJECTS:crystal_storage_kv>

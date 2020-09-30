@@ -44,6 +44,8 @@ bool KVConfig::parse(
     CRYSTAL_LOG(ERROR) << "unsupport key type: " << dataTypeToString(keyType);
     return false;
   }
+  strategy_ = stringToStrategyType(
+      root.getDefault("strategy", "default").getString().c_str());
   bucket_ = root.getDefault("bucket", kBucketSize).getInt();
   segment_ = root.getDefault("segment", 1).getInt();
   auto value = root.getDefault(valueName);
@@ -74,8 +76,7 @@ bool KVConfig::parse(
   return true;
 }
 
-bool KVConfig::parse(
-    const dynamic& root, const RecordConfig& recordConfig) {
+bool KVConfig::parse(const dynamic& root, const RecordConfig& recordConfig) {
   return parse(root, recordConfig, "value", true);
 }
 
@@ -93,6 +94,10 @@ const FieldConfig& KVConfig::keyConfig() const {
 
 const RecordConfig& KVConfig::fields() const {
   return fields_;
+}
+
+StrategyType KVConfig::strategy() const {
+  return strategy_;
 }
 
 size_t KVConfig::bucket() const {

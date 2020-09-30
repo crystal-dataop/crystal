@@ -13,7 +13,7 @@
       key="menuId",
       value=["menuId", "status", "content", "food"],
       bucket=10000,
-      segment=2,
+      segment=3,
       index=[
         {
           type="bitmap",

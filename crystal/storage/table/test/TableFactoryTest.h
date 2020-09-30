@@ -14,29 +14,28 @@
  * limitations under the License.
  */
 
+#pragma once
+
 #include <filesystem>
 #include <gtest/gtest.h>
 
-#include "crystal/foundation/File.h"
-#include "crystal/storage/table/TableGroupConfig.h"
+#include "crystal/foundation/SystemUtil.h"
 
-using namespace crystal;
+namespace crystal {
 
-TEST(TableGroupConfig, all) {
-  std::filesystem::path file =
+class TableFactoryTest : public ::testing::Test {
+ protected:
+  std::string path = getProcessName() + "_data";
+  std::filesystem::path conf =
     std::filesystem::path(__FILE__).parent_path() / "tablegroup.cson";
-  std::string conf;
-  readFile(file.c_str(), conf);
 
-  TableGroupConfig config;
-  config.parse(parseCson(conf));
+  void SetUp() override {
+    static bool sOnce = true;
+    if (sOnce) {
+      std::filesystem::remove_all(path);
+      sOnce = false;
+    }
+  }
+};
 
-  EXPECT_STREQ("1.0", config.version().c_str());
-  EXPECT_EQ(2, config.tableConfigs().size());
-  EXPECT_EQ(3, config.tableConfigs().at("menu").kvConfig().segment());
-  EXPECT_EQ(DataType::UINT64,
-            config.getRelatedFieldType(
-                config
-                .tableConfigs().at("food")
-                .recordConfig().at("menuId")));
-}
+} // namespace crystal

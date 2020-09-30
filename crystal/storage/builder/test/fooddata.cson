@@ -1,0 +1,8 @@
+{
+  foodId=100,
+  status=2,
+  name="food name",
+  desc="food desc",
+  price=5.5,
+  menuId=1000
+}

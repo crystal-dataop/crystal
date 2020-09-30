@@ -56,7 +56,7 @@ TEST_F(TableGroupTest, TableGroup_write) {
   record.set<uint64_t>("__id", 10);
 
   for (uint64_t i = 1; i <= 10000; i *= 10) {
-    KV* kv = table->getKVSegmentById(i);
+    KV* kv = table->getKVById(i);
     EXPECT_FALSE(kv->exist(i));
     EXPECT_TRUE(kv->add(i, record));
     EXPECT_TRUE(kv->exist(i));
@@ -66,7 +66,7 @@ TEST_F(TableGroupTest, TableGroup_write) {
     }
   }
 
-  Index* index = table->getIndexSegmentByToken("status", hashToken(2));
+  Index* index = table->getIndexByToken("status", hashToken(2));
   EXPECT_NE(index, nullptr);
 
   DefaultStrategy strategy(index->keyMeta());
@@ -95,7 +95,7 @@ TEST_F(TableGroupTest, TableGroup_read) {
 
   for (uint64_t i = 1; i <= 10000; i *= 10) {
     EXPECT_EQ((i % table->getKVSegmentCount()) << 32 | i, table->find(i));
-    KV* kv = table->getKVSegmentById(i);
+    KV* kv = table->getKVById(i);
     if (i > 100) {
       EXPECT_FALSE(kv->exist(i));
     } else {
@@ -106,7 +106,7 @@ TEST_F(TableGroupTest, TableGroup_read) {
     }
   }
 
-  Index* index = table->getIndexSegmentByToken("status", hashToken(2));
+  Index* index = table->getIndexByToken("status", hashToken(2));
 
   AnyPostingList pl = index->getPostingList(hashToken(2));
   EXPECT_TRUE(get(pl)->exist(10));

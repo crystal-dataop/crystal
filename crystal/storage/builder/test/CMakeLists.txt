@@ -2,4 +2,6 @@
 
 test_sources(
   RecordBuilderTest.cpp
+  TableBuilderTest.cpp
+  TableGroupBuilderTest.cpp
 )

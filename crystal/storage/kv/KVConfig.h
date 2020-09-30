@@ -20,6 +20,7 @@
 #include <string>
 
 #include "crystal/serializer/record/RecordConfig.h"
+#include "crystal/strategy/StrategyType.h"
 
 namespace crystal {
 
@@ -28,13 +29,13 @@ class KVConfig {
   KVConfig(const std::string& name = "")
       : name_(name) {}
 
-  virtual bool parse(const dynamic& root,
-                     const RecordConfig& recordConfig);
+  virtual bool parse(const dynamic& root, const RecordConfig& recordConfig);
 
   const std::string& name() const;
   const std::string& key() const;
   const FieldConfig& keyConfig() const;
   const RecordConfig& fields() const;
+  StrategyType strategy() const;
   size_t bucket() const;
   uint16_t segment() const;
 
@@ -51,6 +52,7 @@ class KVConfig {
   std::string key_;
   FieldConfig keyConfig_;
   RecordConfig fields_;
+  StrategyType strategy_{StrategyType::kDefault};
   size_t bucket_{kBucketSize};
   uint16_t segment_{1};
 };

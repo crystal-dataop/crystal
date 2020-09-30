@@ -1,0 +1,7 @@
+{
+  menuId=1000,
+  status=2,
+  keyword="menu",
+  content="menu content",
+  food=["a","b","c"]
+}
