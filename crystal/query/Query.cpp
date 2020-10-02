@@ -27,20 +27,16 @@ Query::Query(TableFactory* factory, Graph::Executor* executor, bool useCson)
 
 DataView Query::run() {
   DataView view;
-  try {
-    auto jq = useCson_ ? parseCson(query_) : parseJson(query_);
-    auto path = jq["path"].asString();
-    ExtendedTable* extable = factory_->getExtendedTable(path);
-    if (!extable) {
-      CRYSTAL_LOG(ERROR) << "table at path '" << path << "' not exist";
-      return view;
-    }
-    view = DataView(std::make_unique<DocumentArray>(extable));
-    graph_.gen(jq["graph"]);
-    graph_.run(&view);
-  } catch (std::exception& e) {
-    CRYSTAL_LOG(ERROR) << "parse query failed, " << e.what();
+  auto jq = useCson_ ? parseCson(query_) : parseJson(query_);
+  auto path = jq["path"].asString();
+  ExtendedTable* extable = factory_->getExtendedTable(path);
+  if (!extable) {
+    CRYSTAL_LOG(ERROR) << "table at path '" << path << "' not exist";
+    return view;
   }
+  view = DataView(std::make_unique<DocumentArray>(extable));
+  graph_.gen(jq["graph"]);
+  graph_.run(&view);
   return view;
 }
 
