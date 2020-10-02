@@ -68,6 +68,7 @@ build_directory(crystal _base)
 build_directory(crystal/dataframe)
 build_directory(crystal/foundation)
 build_directory(crystal/foundation/http)
+build_directory(crystal/graph)
 build_directory(crystal/math)
 build_directory(crystal/memory)
 build_directory(crystal/operator)
@@ -86,6 +87,7 @@ add_library(crystal
   $<TARGET_OBJECTS:crystal_dataframe>
   $<TARGET_OBJECTS:crystal_foundation>
   $<TARGET_OBJECTS:crystal_foundation_http>
+  $<TARGET_OBJECTS:crystal_graph>
   $<TARGET_OBJECTS:crystal_memory>
   $<TARGET_OBJECTS:crystal_operator_search>
   $<TARGET_OBJECTS:crystal_serializer>
