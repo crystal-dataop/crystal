@@ -30,11 +30,38 @@ bool IndexConfig::parse(const dynamic& root, const RecordConfig& recordConfig) {
     return false;
   }
   type_ = type.getString();
+  if (strcasecmp(type_.substr(0, 5).c_str(), "Faiss") == 0) {
+    vectorMeta_.type = VectorType::Faiss;
+    if (type_.size() > 5) {
+      vectorMeta_.desc = type_.substr(strlen("Faiss:"));
+      type_ = "Faiss";
+    }
+    auto dimension = root.getDefault("dimension", -1);
+    if (dimension.getInt() < 0) {
+      CRYSTAL_LOG(ERROR) << "miss dimension: " << toCson(root);
+      return false;
+    }
+    vectorMeta_.dimension = dimension.getInt();
+    auto metric = root.getDefault("metric");
+    if (metric.empty()) {
+      CRYSTAL_LOG(ERROR) << "miss metric: " << toCson(root);
+      return false;
+    }
+    vectorMeta_.metric = stringToFaissMetric(metric.asString().c_str());
+    vectorMeta_.trainSize = root.getDefault("trainSize",
+                                            vectorMeta_.trainSize).getInt();
+    vectorMeta_.batchSize = root.getDefault("batchSize",
+                                            vectorMeta_.batchSize).getInt();
+  }
   return true;
 }
 
 const std::string& IndexConfig::type() const {
   return type_;
+}
+
+const VectorMeta& IndexConfig::vectorMeta() const {
+  return vectorMeta_;
 }
 
 }  // namespace crystal

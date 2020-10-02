@@ -28,6 +28,7 @@ namespace crystal {
   x(MemRecyc),                      \
   x(MemHash),                       \
   x(MemBit),                        \
+  x(MemFaiss),                      \
   x(MemMax)
 
 #define CRYSTAL_MEMORY_TYPE_ENUM(type) k##type
@@ -47,12 +48,12 @@ class MemoryManager {
   MemoryManager(const char* path, bool readOnly)
       : path_(path), readOnly_(readOnly) {}
 
-  Memory* getMemory(int type);
+  Memory* getMemory(int type, const void* extra = nullptr);
 
   void dump();
 
  private:
-  void createMemory(int type);
+  void createMemory(int type, const void* extra);
 
   std::string path_;
   bool readOnly_;
@@ -61,12 +62,12 @@ class MemoryManager {
 
 //////////////////////////////////////////////////////////////////////
 
-inline Memory* MemoryManager::getMemory(int type) {
+inline Memory* MemoryManager::getMemory(int type, const void* extra) {
   if (type < 0 || type >= kMemMax) {
     return nullptr;
   }
   if (!memArray_[type]) {
-    createMemory(type);
+    createMemory(type, extra);
   }
   return memArray_[type].get();
 }

@@ -18,11 +18,13 @@
 
 #include "crystal/storage/index/Variant.h"
 #include "crystal/storage/index/bitmap/BitmapPostingListIterator.h"
+#include "crystal/storage/index/vector/VectorPostingListIterator.h"
 
 namespace crystal {
 
 typedef std::variant<
   BitmapPostingListIterator,
+  VectorPostingListIterator,
   std::monostate> AnyPostingListIterator;
 
 inline PostingListIterator* get(AnyPostingListIterator& o) {

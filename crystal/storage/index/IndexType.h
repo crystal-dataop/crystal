@@ -20,7 +20,8 @@ namespace crystal {
 
 #define CRYSTAL_INDEX_TYPE_GEN(x) \
   x(None),                        \
-  x(Bitmap)
+  x(Bitmap),                      \
+  x(Faiss)
 
 #define CRYSTAL_INDEX_TYPE_ENUM(type) k##type
 

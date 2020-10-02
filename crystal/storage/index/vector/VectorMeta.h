@@ -16,19 +16,33 @@
 
 #pragma once
 
-#include "crystal/storage/index/Variant.h"
-#include "crystal/storage/index/bitmap/BitmapPostingList.h"
-#include "crystal/storage/index/vector/VectorPostingList.h"
+#include <cstdint>
+#include <string>
 
 namespace crystal {
 
-typedef std::variant<
-  BitmapPostingList,
-  VectorPostingList,
-  std::monostate> AnyPostingList;
+#define CRYSTAL_VECTOR_TYPE_GEN(x)  \
+  x(Faiss)
 
-inline PostingList* get(AnyPostingList& o) {
-  return getBase<PostingList>(o);
-}
+#define CRYSTAL_VECTOR_TYPE_ENUM(type) type
 
-} // namespace crystal
+enum class VectorType {
+  CRYSTAL_VECTOR_TYPE_GEN(CRYSTAL_VECTOR_TYPE_ENUM)
+};
+
+#undef CRYSTAL_VECTOR_TYPE_ENUM
+
+const char* vectorTypeToString(VectorType type);
+
+int stringToFaissMetric(const char* str);
+
+struct VectorMeta {
+  VectorType type;
+  std::string desc;
+  int64_t dimension;
+  int metric;
+  int64_t trainSize{1 << 20};
+  int64_t batchSize{1 << 16};
+};
+
+}  // namespace crystal

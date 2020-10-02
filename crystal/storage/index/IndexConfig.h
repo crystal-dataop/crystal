@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "crystal/storage/kv/KVConfig.h"
+#include "crystal/storage/index/vector/VectorMeta.h"
 
 namespace crystal {
 
@@ -30,9 +31,11 @@ class IndexConfig : public KVConfig {
   bool parse(const dynamic& root, const RecordConfig& recordConfig) override;
 
   const std::string& type() const;
+  const VectorMeta& vectorMeta() const;
 
  private:
   std::string type_;
+  VectorMeta vectorMeta_;
 };
 
 }  // namespace crystal

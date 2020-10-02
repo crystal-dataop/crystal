@@ -18,11 +18,13 @@
 
 #include "crystal/storage/index/Variant.h"
 #include "crystal/storage/index/bitmap/BitmapPosting.h"
+#include "crystal/storage/index/vector/VectorPosting.h"
 
 namespace crystal {
 
 typedef std::variant<
   BitmapPosting,
+  VectorPosting,
   std::monostate> AnyPosting;
 
 inline Posting* get(AnyPosting& o) {

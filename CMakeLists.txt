@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.6)
 
 # Define project
-project(crystal VERSION 0.1.0)
+project(crystal VERSION 0.2.0)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 
@@ -16,6 +16,10 @@ find_package(Threads REQUIRED)
 find_package(DoubleConversion REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(GFlags REQUIRED)
+# Faiss
+find_package(Faiss REQUIRED)
+find_package(BLAS REQUIRED)
+find_package(OMP REQUIRED)
 
 # Optional packages
 find_package(GTest)
@@ -26,6 +30,9 @@ option(BUILD_SHARED_LIBS "Build libraries as shared ones" OFF)
 set(CMAKE_BUILD_TYPE RelWithDebInfo)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")    # memcheck
+if(${OpenMP_FOUND})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 set(CMAKE_VERBOSE_MAKEFILE OFF)
@@ -35,6 +42,8 @@ link_libraries(
   ${DOUBLE_CONVERSION_LIBRARY}
   ${OPENSSL_LIBRARIES}
   ${GFLAGS_LIBRARIES}
+  ${FAISS_LIBRARY}
+  ${BLAS_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
 )
@@ -45,6 +54,9 @@ include_directories(
   ${DOUBLE_CONVERSION_INCLUDE_DIR}
   ${GFLAGS_INCLUDE_DIR}
 )
+if(OMP_FOUND)
+  link_libraries(${OMP_LIBRARY})
+endif()
 
 # Check and setup configurations
 include(CheckCXXSourceCompiles REQUIRED)
@@ -83,6 +95,7 @@ build_directory(crystal/serializer/record)
 build_directory(crystal/storage/builder)
 build_directory(crystal/storage/index)
 build_directory(crystal/storage/index/bitmap)
+build_directory(crystal/storage/index/vector)
 build_directory(crystal/storage/kv)
 build_directory(crystal/storage/table)
 build_directory(crystal/strategy)
@@ -102,6 +115,7 @@ add_library(crystal
   $<TARGET_OBJECTS:crystal_storage_builder>
   $<TARGET_OBJECTS:crystal_storage_index>
   $<TARGET_OBJECTS:crystal_storage_index_bitmap>
+  $<TARGET_OBJECTS:crystal_storage_index_vector>
   $<TARGET_OBJECTS:crystal_storage_kv>
   $<TARGET_OBJECTS:crystal_storage_table>
   $<TARGET_OBJECTS:crystal_strategy>

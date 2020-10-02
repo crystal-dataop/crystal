@@ -18,6 +18,7 @@
 
 #include "crystal/foundation/Logging.h"
 #include "crystal/foundation/String.h"
+#include "crystal/memory/FaissMemory.h"
 #include "crystal/memory/MMapMemory.h"
 
 namespace crystal {
@@ -59,7 +60,7 @@ void MemoryManager::dump() {
   }
 }
 
-void MemoryManager::createMemory(int type) {
+void MemoryManager::createMemory(int type, const void* extra) {
   auto path = toMemPath(path_, type);
   int flags = readOnly_ ? O_RDONLY : O_RDWR | O_CREAT;
   std::unique_ptr<Memory> mem;
@@ -69,6 +70,9 @@ void MemoryManager::createMemory(int type) {
     case kMemHash:
     case kMemBit:
       mem = std::make_unique<MMapMemory>(path.c_str(), flags);
+      break;
+    case kMemFaiss:
+      mem = std::make_unique<FaissMemory>(path.c_str(), flags, extra);
       break;
     default:
       return;

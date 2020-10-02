@@ -23,10 +23,12 @@ TEST_F(MemoryManagerTest, write) {
   MemoryManager manager(path.c_str(), false);
 
   for (int i = 0; i < kMemMax; ++i) {
-    Memory* memory = manager.getMemory(i);
-    int v = 100;
-    EXPECT_EQ(kMemStart, write(memory, v));
-    EXPECT_EQ(sizeof(int), memory->getAllocatedSize());
+    if (i != kMemFaiss) {
+      Memory* memory = manager.getMemory(i);
+      int v = 100;
+      EXPECT_EQ(kMemStart, write(memory, v));
+      EXPECT_EQ(sizeof(int), memory->getAllocatedSize());
+    }
   }
   manager.dump();
 }
@@ -35,10 +37,12 @@ TEST_F(MemoryManagerTest, read) {
   MemoryManager manager(path.c_str(), true);
 
   for (int i = 0; i < kMemMax; ++i) {
-    Memory* memory = manager.getMemory(i);
-    int* p = address<int>(memory, kMemStart);
-    EXPECT_NE(nullptr, p);
-    EXPECT_EQ(100, *p);
-    EXPECT_EQ(sizeof(int), memory->getAllocatedSize());
+    if (i != kMemFaiss) {
+      Memory* memory = manager.getMemory(i);
+      int* p = address<int>(memory, kMemStart);
+      EXPECT_NE(nullptr, p);
+      EXPECT_EQ(100, *p);
+      EXPECT_EQ(sizeof(int), memory->getAllocatedSize());
+    }
   }
 }
