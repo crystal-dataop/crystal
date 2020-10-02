@@ -1,0 +1,9 @@
+[
+  {foodId=1, status=2, name="a", desc="desc", price=5.5, menuId=1},
+  {foodId=2, status=2, name="b", desc="desc", price=4.5, menuId=1},
+  {foodId=3, status=2, name="c", desc="desc", price=4.5, menuId=1},
+  {foodId=4, status=2, name="d", desc="desc", price=5.0, menuId=2},
+  {foodId=5, status=2, name="e", desc="desc", price=10.5, menuId=3},
+  {foodId=6, status=2, name="f", desc="desc", price=25.5, menuId=4},
+  {foodId=7, status=2, name="g", desc="desc", price=1.5, menuId=4}
+]

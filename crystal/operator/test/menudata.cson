@@ -1,0 +1,6 @@
+[
+  {menuId=1, status=2, keyword="menu1", content="content", food=["a","b","c"]},
+  {menuId=2, status=0, keyword="menu2", content="content", food=["d"]},
+  {menuId=3, status=2, keyword="menu3", content="content", food=["e"]},
+  {menuId=4, status=1, keyword="menu4", content="content", food=["f","g"]}
+]
