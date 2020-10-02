@@ -120,20 +120,19 @@ inline std::optional<T> Document::get(size_t i) const {
   auto& fi = table_->fieldInfos()[i];
   switch (fi.type) {
     case FieldInfo::kPayload: {
-      Record record = index_.index->createRecord();
-      record.setBuffer(reinterpret_cast<void*>(index_.payload));
+      Record record = index_.index->createRecord(
+          reinterpret_cast<void*>(index_.payload));
       return record.get<T>(fi.meta);
     }
     case FieldInfo::kPayloadAndValue: {
       if (fi.indexNo.test(index_.indexNo)) {
-        Record record = index_.index->createRecord();
-        record.setBuffer(reinterpret_cast<void*>(index_.payload));
+        Record record = index_.index->createRecord(
+            reinterpret_cast<void*>(index_.payload));
         return record.get<T>(fi.meta);
       }
     }
     case FieldInfo::kValue: {
-      Record record = kv_->createRecord();
-      record.setBuffer(reinterpret_cast<void*>(value_));
+      Record record = kv_->createRecord(reinterpret_cast<void*>(value_));
       return record.get<T>(fi.meta);
     }
     case FieldInfo::kRelated: {

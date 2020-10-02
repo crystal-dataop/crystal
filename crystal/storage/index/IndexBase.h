@@ -49,7 +49,7 @@ class IndexBase {
   PostingAllocator& allocator();
   RecycledAllocator& recycledAllocator();
 
-  Record createRecord() const;
+  Record createRecord(void* buf = nullptr) const;
 
  protected:
   const IndexConfig* config_{nullptr};
@@ -86,8 +86,8 @@ inline RecycledAllocator& IndexBase::recycledAllocator() {
   return recycledAlloc_;
 }
 
-inline Record IndexBase::createRecord() const {
-  return Record(&recordMeta_, &accessor_, &recycledAlloc_);
+inline Record IndexBase::createRecord(void* buf) const {
+  return Record(&recordMeta_, &accessor_, &recycledAlloc_, buf);
 }
 
 }  // namespace crystal

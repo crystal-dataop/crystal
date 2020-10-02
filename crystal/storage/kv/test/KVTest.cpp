@@ -96,8 +96,7 @@ TEST_F(KVTest, read) {
       EXPECT_TRUE(kv.exist(i));
       void* ptr = kv.getRecordPtr(i);
       EXPECT_NE(nullptr, ptr);
-      Record record = kv.createRecord();
-      record.setBuffer(ptr);
+      Record record = kv.createRecord(ptr);
       EXPECT_EQ(1, record.get<uint32_t>(
               *record.recordMeta()->getMeta("status")));
     }

@@ -54,7 +54,7 @@ class KV {
 
   bool exist(uint32_t id) const;
 
-  Record createRecord() const;
+  Record createRecord(void* buf = nullptr) const;
   void* getRecordPtr(uint32_t id) const;
   bool get(uint32_t id, Record& record) const;
   bool getUnsafe(uint32_t id, Record& record) const;
@@ -107,8 +107,8 @@ inline bool KV::exist(uint32_t id) const {
   return id < chunkMap_.size() && !bitMaskMap_.isSet(id);
 }
 
-inline Record KV::createRecord() const {
-  return Record(&recordMeta_, &accessor_, &alloc_);
+inline Record KV::createRecord(void* buf) const {
+  return Record(&recordMeta_, &accessor_, &alloc_, buf);
 }
 
 inline void* KV::getRecordPtr(uint32_t id) const {

@@ -79,8 +79,7 @@ bool KV::add(uint32_t id, const Record& newRecord) {
       return false;
     }
   }
-  Record record = createRecord();
-  record.setBuffer(getRecordPtr(id));
+  Record record = createRecord(getRecordPtr(id));
   if (!record.copy(newRecord)) {
     CRYSTAL_LOG(ERROR) << "copy from newRecord failed, id=" << id;
     return false;
@@ -101,8 +100,7 @@ bool KV::update(uint32_t id, const Record& newRecord) {
     CRYSTAL_LOG(ERROR) << "set bitmask map failed, id=" << id;
     return false;
   }
-  Record record = createRecord();
-  record.setBuffer(getRecordPtr(id));
+  Record record = createRecord(getRecordPtr(id));
   if (!record.merge(newRecord)) {
     CRYSTAL_LOG(ERROR) << "merge from newRecord failed, id=" << id;
     return false;
@@ -122,8 +120,7 @@ bool KV::remove(uint32_t id) {
     CRYSTAL_LOG(ERROR) << "set bitmask map failed, id=" << id;
     return false;
   }
-  Record record = createRecord();
-  record.setBuffer(getRecordPtr(id));
+  Record record = createRecord(getRecordPtr(id));
   if (!record.reset()) {
     CRYSTAL_LOG(ERROR) << "reset record failed, id=" << id;
     return false;
