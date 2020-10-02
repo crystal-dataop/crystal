@@ -72,7 +72,9 @@ build_directory(crystal/graph)
 build_directory(crystal/math)
 build_directory(crystal/memory)
 build_directory(crystal/operator)
+build_directory(crystal/operator/generic)
 build_directory(crystal/operator/search)
+build_directory(crystal/query)
 build_directory(crystal/serializer)
 build_directory(crystal/serializer/record)
 build_directory(crystal/storage/builder)
@@ -89,7 +91,9 @@ add_library(crystal
   $<TARGET_OBJECTS:crystal_foundation_http>
   $<TARGET_OBJECTS:crystal_graph>
   $<TARGET_OBJECTS:crystal_memory>
+  $<TARGET_OBJECTS:crystal_operator_generic>
   $<TARGET_OBJECTS:crystal_operator_search>
+  $<TARGET_OBJECTS:crystal_query>
   $<TARGET_OBJECTS:crystal_serializer>
   $<TARGET_OBJECTS:crystal_serializer_record>
   $<TARGET_OBJECTS:crystal_storage_builder>
@@ -115,6 +119,7 @@ if(GTEST_FOUND)
   add_subdirectory(crystal/dataframe/test)
   add_subdirectory(crystal/memory/test)
   add_subdirectory(crystal/operator/test)
+  add_subdirectory(crystal/operator/generic/test)
   add_subdirectory(crystal/operator/search/test)
   add_subdirectory(crystal/serializer/test)
   add_subdirectory(crystal/serializer/record/test)
