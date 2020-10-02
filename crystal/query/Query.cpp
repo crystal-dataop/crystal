@@ -21,14 +21,14 @@
 
 namespace crystal {
 
-Query::Query(TableFactory* factory, Graph::Executor* executor, bool useJson)
-    : factory_(factory), graph_(executor), useJson_(useJson) {
+Query::Query(TableFactory* factory, Graph::Executor* executor, bool useCson)
+    : factory_(factory), graph_(executor), useCson_(useCson) {
 }
 
 DataView Query::run() {
   DataView view;
   try {
-    auto jq = useJson_ ? parseJson(query_) : parseCson(query_);
+    auto jq = useCson_ ? parseCson(query_) : parseJson(query_);
     auto path = jq["path"].asString();
     ExtendedTable* extable = factory_->getExtendedTable(path);
     if (!extable) {
@@ -47,6 +47,11 @@ DataView Query::run() {
 std::string Query::runAndToJson(bool tableMode, bool prettify) {
   DataView view = run();
   return view | op::toJson(tableMode, prettify);
+}
+
+std::string Query::runAndToCson(bool tableMode, bool prettify) {
+  DataView view = run();
+  return view | op::toCson(tableMode, prettify);
 }
 
 }  // namespace crystal

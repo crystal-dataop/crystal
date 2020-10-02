@@ -15,6 +15,7 @@ set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
 find_package(DoubleConversion REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(GFlags REQUIRED)
 
 # Optional packages
 find_package(GTest)
@@ -33,6 +34,7 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 link_libraries(
   ${DOUBLE_CONVERSION_LIBRARY}
   ${OPENSSL_LIBRARIES}
+  ${GFLAGS_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
 )
@@ -41,6 +43,7 @@ include_directories(
   ${PROJECT_SOURCE_DIR}
   ${CMAKE_PREFIX_PATH}/include
   ${DOUBLE_CONVERSION_INCLUDE_DIR}
+  ${GFLAGS_INCLUDE_DIR}
 )
 
 # Check and setup configurations
@@ -112,6 +115,7 @@ install(TARGETS crystal
 
 # Binary
 add_subdirectory(crystal/foundation/http/examples)
+add_subdirectory(crystal/tools)
 
 # Test
 if(GTEST_FOUND)

@@ -25,7 +25,7 @@ class DataView;
 
 class Query {
  public:
-  Query(TableFactory* factory, Graph::Executor* executor, bool useJson = true);
+  Query(TableFactory* factory, Graph::Executor* executor, bool useCson = true);
 
   virtual ~Query() {}
 
@@ -41,11 +41,12 @@ class Query {
   DataView run();
 
   std::string runAndToJson(bool tableMode, bool prettify);
+  std::string runAndToCson(bool tableMode, bool prettify);
 
  private:
   TableFactory* factory_;
   Graph graph_;
-  bool useJson_;
+  bool useCson_;
   std::string query_;
 };
 
