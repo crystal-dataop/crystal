@@ -19,7 +19,9 @@ Build & test:
 Crystal requires c++17, tested on MacOS 10.15 currently, Linux will be tested
 soon.
 
-```
+```sh
+brew install asio double-conversion gflags omp  # for mac
+
 ./deps.sh
 ./build.sh
 cd _build && make test
