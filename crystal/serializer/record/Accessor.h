@@ -118,7 +118,7 @@ class Accessor {
       const void* srcBuf, Allocator* srcAlloc, const Accessor* other,
       const RecordMeta& recordMeta) const;
 
-  bool buildVarArray(
+  bool rebuildVarArray(
       void* buf, Allocator* alloc, const FieldMeta& meta, size_t size) const;
 
   dynamic toDynamic() const;
@@ -138,6 +138,9 @@ class Accessor {
 
   bool resetOne(void* buf, Allocator* alloc, const FieldMeta& meta) const;
   bool resetArray(void* buf, Allocator* alloc, const FieldMeta& meta) const;
+
+  bool buildVarArray(
+      void* buf, Allocator* alloc, const FieldMeta& meta, size_t size) const;
 
   bool mergeOne(
       void* buf, Allocator* alloc,
@@ -478,12 +481,7 @@ bool Accessor::mergeArrayImpl(
   Array<T> src = other->mget<T>(srcBuf, srcAlloc, meta);
   size_t size = src.size();
   if (meta.isVarArray()) {
-    if (!resetArray(buf, alloc, meta)) {
-      CRYSTAL_LOG(ERROR) << "reset array '" << meta.name() << "' failed";
-      return false;
-    }
-    if (!buildVarArray(buf, alloc, meta, size)) {
-      CRYSTAL_LOG(ERROR) << "build array '" << meta.name() << "' failed";
+    if (!rebuildVarArray(buf, alloc, meta, size)) {
       return false;
     }
   }

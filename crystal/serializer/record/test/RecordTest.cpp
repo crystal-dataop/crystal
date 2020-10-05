@@ -100,35 +100,35 @@ TEST(Record, all) {
     EXPECT_EQ("string", a10.get(i));
   }
 
-  EXPECT_TRUE(record.buildVarArray(*meta.getMeta(11), 10));
+  EXPECT_TRUE(record.rebuildVarArray(*meta.getMeta(11), 10));
   Array<bool> a11 = record.get<Array<bool>>(*meta.getMeta(11));
   for (size_t i = 0; i < 10; i++) {
     EXPECT_EQ(false, a11.get(i));
     EXPECT_TRUE(a11.set(i, true));
     EXPECT_EQ(true, a11.get(i));
   }
-  EXPECT_TRUE(record.buildVarArray(*meta.getMeta(12), 10));
+  EXPECT_TRUE(record.rebuildVarArray(*meta.getMeta(12), 10));
   Array<int8_t> a12 = record.get<Array<int8_t>>(*meta.getMeta(12));
   for (size_t i = 0; i < 10; i++) {
     EXPECT_EQ(50, a12.get(i));
     EXPECT_TRUE(a12.set(i, i));
     EXPECT_EQ(i, a12.get(i));
   }
-  EXPECT_TRUE(record.buildVarArray(*meta.getMeta(13), 10));
+  EXPECT_TRUE(record.rebuildVarArray(*meta.getMeta(13), 10));
   Array<int8_t> a13 = record.get<Array<int8_t>>(*meta.getMeta(13));
   for (size_t i = 0; i < 10; i++) {
     EXPECT_EQ(0, a13.get(i));
     EXPECT_TRUE(a13.set(i, i));
     EXPECT_EQ(i, a13.get(i));
   }
-  EXPECT_TRUE(record.buildVarArray(*meta.getMeta(14), 10));
+  EXPECT_TRUE(record.rebuildVarArray(*meta.getMeta(14), 10));
   Array<float> a14 = record.get<Array<float>>(*meta.getMeta(14));
   for (size_t i = 0; i < 10; i++) {
     EXPECT_FLOAT_EQ(0, a14.get(i));
     EXPECT_TRUE(a14.set(i, i * 0.1));
     EXPECT_FLOAT_EQ(i * 0.1, a14.get(i));
   }
-  EXPECT_TRUE(record.buildVarArray(*meta.getMeta(15), 10));
+  EXPECT_TRUE(record.rebuildVarArray(*meta.getMeta(15), 10));
   Array<std::string_view> a15 =
       record.get<Array<std::string_view>>(*meta.getMeta(15));
   for (size_t i = 0; i < 10; i++) {

@@ -18,7 +18,7 @@
 
 #include "crystal/memory/SysAllocator.h"
 #include "crystal/serializer/DynamicEncoding.h"
-#include "crystal/serializer/record/Record.h"
+#include "crystal/serializer/record/RecordArray.h"
 #include "crystal/serializer/record/RecordConfig.h"
 
 namespace crystal {
@@ -41,28 +41,22 @@ class RecordBuilder {
   void release();
 
  private:
-  RecordMeta recordMeta_;
-  Accessor accessor_;
-  Alloc alloc_;
-  std::set<int64_t> offsets_;
+  RecordArrayBase<Alloc> recordArray_;
 };
 
 //////////////////////////////////////////////////////////////////////
 
 template <class Alloc>
 RecordBuilder<Alloc>::RecordBuilder(const RecordMeta& meta)
-    : recordMeta_(meta),
-      accessor_(recordMeta_) {}
+    : recordArray_(meta) {}
 
 template <class Alloc>
 RecordBuilder<Alloc>::RecordBuilder(const RecordConfig& config, bool addId)
-    : recordMeta_(buildRecordMeta(config, addId)),
-      accessor_(recordMeta_) {}
+    : recordArray_(buildRecordMeta(config, addId)) {}
 
 template <class Alloc>
 RecordBuilder<Alloc>::RecordBuilder(const dynamic& j, bool addId)
-    : recordMeta_(buildRecordMeta(parseRecordConfig(j), addId)),
-      accessor_(recordMeta_) {}
+    : recordArray_(buildRecordMeta(parseRecordConfig(j), addId)) {}
 
 template <class Alloc>
 RecordBuilder<Alloc>::~RecordBuilder() {
@@ -71,22 +65,12 @@ RecordBuilder<Alloc>::~RecordBuilder() {
 
 template <class Alloc>
 bool RecordBuilder<Alloc>::init(Memory* memory) {
-  return alloc_.init(memory);
+  return recordArray_.init(memory);
 }
 
 template <class Alloc>
 Record RecordBuilder<Alloc>::build() {
-  Record record;
-  int64_t offset = alloc_.allocate(accessor_.bufferSize());
-  if (offset == 0) {
-    return record;
-  }
-  offsets_.insert(offset);
-  void* buf = alloc_.address(offset);
-  memset(buf, 0, accessor_.bufferSize());
-  record.init(&recordMeta_, &accessor_, &alloc_, buf);
-  record.reset();
-  return record;
+  return recordArray_.createRecord();
 }
 
 template <class Alloc>
@@ -98,10 +82,7 @@ Record RecordBuilder<Alloc>::build(const dynamic& j) {
 
 template <class Alloc>
 void RecordBuilder<Alloc>::release() {
-  for (int64_t offset : offsets_) {
-    alloc_.deallocate(offset);
-  }
-  offsets_.clear();
+  recordArray_.release();
 }
 
 } // namespace crystal

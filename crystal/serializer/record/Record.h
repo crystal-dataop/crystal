@@ -59,37 +59,31 @@ class Record {
   typename std::enable_if<IsValue<T>::value, T>::type
   get(const FieldMeta& meta) const;
   template <class T>
-  typename std::enable_if<IsValue<T>::value, T>::type
-  get(const std::string& field) const;
-  template <class T>
-  typename std::enable_if<IsValue<T>::value, T>::type
-  get(int tag) const;
-
-  template <class T>
   typename std::enable_if<IsArray<T>::value, T>::type
   get(const FieldMeta& meta) const;
+
   template <class T>
-  typename std::enable_if<IsArray<T>::value, T>::type
-  get(const std::string& field) const;
+  T get(const std::string& field) const;
   template <class T>
-  typename std::enable_if<IsArray<T>::value, T>::type
-  get(int tag) const;
+  T get(int tag) const;
 
   template <class T>
   typename std::enable_if<IsValue<T>::value, bool>::type
-  set(const FieldMeta& meta, const T& value) const;
+  set(const FieldMeta& meta, const T& value);
   template <class T>
-  typename std::enable_if<IsValue<T>::value, bool>::type
-  set(const std::string& field, const T& value) const;
+  typename std::enable_if<IsArray<T>::value, bool>::type
+  set(const FieldMeta& meta, const T& value);
+
   template <class T>
-  typename std::enable_if<IsValue<T>::value, bool>::type
-  set(int tag, const T& value) const;
+  bool set(const std::string& field, const T& value);
+  template <class T>
+  bool set(int tag, const T& value);
 
   bool reset();
   bool merge(const Record& record);
   bool copy(const Record& record);
 
-  bool buildVarArray(const FieldMeta& meta, size_t size);
+  bool rebuildVarArray(const FieldMeta& meta, size_t size);
 
   dynamic toDynamic() const;
   std::string toString(const json::serialization_opts& opts
@@ -164,38 +158,24 @@ Record::get(const FieldMeta& meta) const {
 }
 
 template <class T>
-inline typename std::enable_if<IsValue<T>::value, T>::type
-Record::get(const std::string& field) const {
-  return get<T>(*recordMeta_->getMeta(field));
-}
-
-template <class T>
-inline typename std::enable_if<IsValue<T>::value, T>::type
-Record::get(int tag) const {
-  return get<T>(*recordMeta_->getMeta(tag));
-}
-
-template <class T>
 inline typename std::enable_if<IsArray<T>::value, T>::type
 Record::get(const FieldMeta& meta) const {
   return accessor_->mget<typename T::value_type>(buf_, alloc_, meta);
 }
 
 template <class T>
-inline typename std::enable_if<IsArray<T>::value, T>::type
-Record::get(const std::string& field) const {
+inline T Record::get(const std::string& field) const {
   return get<T>(*recordMeta_->getMeta(field));
 }
 
 template <class T>
-inline typename std::enable_if<IsArray<T>::value, T>::type
-Record::get(int tag) const {
+inline T Record::get(int tag) const {
   return get<T>(*recordMeta_->getMeta(tag));
 }
 
 template <class T>
 inline typename std::enable_if<IsValue<T>::value, bool>::type
-Record::set(const FieldMeta& meta, const T& value) const {
+Record::set(const FieldMeta& meta, const T& value) {
   if (!checkType<T>(meta.type()) || meta.isArray()) {
     return false;
   }
@@ -203,14 +183,32 @@ Record::set(const FieldMeta& meta, const T& value) const {
 }
 
 template <class T>
-inline typename std::enable_if<IsValue<T>::value, bool>::type
-Record::set(const std::string& field, const T& value) const {
+inline typename std::enable_if<IsArray<T>::value, bool>::type
+Record::set(const FieldMeta& meta, const T& value) {
+  if (!checkType<typename T::value_type>(meta.type()) || !meta.isArray()) {
+    return false;
+  }
+  if (meta.isVarArray()) {
+    rebuildVarArray(meta, value.size());
+  } else if (meta.count() != value.size()) {
+    return false;
+  }
+  T a = get<T>(meta);
+  for (size_t i = 0; i < value.size(); ++i) {
+    if (!a.set(i, a.get(i))) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <class T>
+inline bool Record::set(const std::string& field, const T& value) {
   return set(*recordMeta_->getMeta(field), value);
 }
 
 template <class T>
-inline typename std::enable_if<IsValue<T>::value, bool>::type
-Record::set(int tag, const T& value) const {
+inline bool Record::set(int tag, const T& value) {
   return set(*recordMeta_->getMeta(tag), value);
 }
 
@@ -230,8 +228,8 @@ inline bool Record::copy(const Record& record) {
       *recordMeta_);
 }
 
-inline bool Record::buildVarArray(const FieldMeta& meta, size_t size) {
-  return accessor_->buildVarArray(buf_, alloc_, meta, size);
+inline bool Record::rebuildVarArray(const FieldMeta& meta, size_t size) {
+  return accessor_->rebuildVarArray(buf_, alloc_, meta, size);
 }
 
 template <class T>

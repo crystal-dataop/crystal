@@ -1,6 +1,7 @@
 # Copyright 2017-present Yeolar
 
 test_sources(
+  ChunkedMemoryTest.cpp
   FreeStackTest.cpp
   MMapFileTest.cpp
   MMapMemoryTest.cpp

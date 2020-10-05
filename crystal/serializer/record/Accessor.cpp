@@ -297,6 +297,19 @@ bool Accessor::buildVarArray(
   return true;
 }
 
+bool Accessor::rebuildVarArray(
+    void* buf, Allocator* alloc, const FieldMeta& meta, size_t size) const {
+  if (!resetArray(buf, alloc, meta)) {
+    CRYSTAL_LOG(ERROR) << "reset array '" << meta.name() << "' failed";
+    return false;
+  }
+  if (!buildVarArray(buf, alloc, meta, size)) {
+    CRYSTAL_LOG(ERROR) << "build array '" << meta.name() << "' failed";
+    return false;
+  }
+  return true;
+}
+
 dynamic Accessor::toDynamic() const {
   dynamic blocks = dynamic::array;
   for (auto& block : blocks_) {

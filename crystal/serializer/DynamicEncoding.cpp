@@ -28,7 +28,7 @@ void parseField(const dynamic& j, Record& value, const FieldMeta& meta) {
     }
     size_t n = j.size();
     if (meta.isVarArray()) {
-      value.buildVarArray(meta, n);
+      value.rebuildVarArray(meta, n);
     } else if (meta.count() != n) {
       CRYSTAL_THROW(LengthError, "unequal array size: ", meta.count(), "!=", n);
     }

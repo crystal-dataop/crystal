@@ -104,35 +104,35 @@ TEST(Accessor, all) {
     EXPECT_STREQ("string", std::string(a10.get(i)).c_str());
   }
 
-  EXPECT_TRUE(accessor.buildVarArray(buf, &allocator, *meta.getMeta(11), 10));
+  EXPECT_TRUE(accessor.rebuildVarArray(buf, &allocator, *meta.getMeta(11), 10));
   Array<bool> a11 = accessor.mget<bool>(buf, &allocator, *meta.getMeta(11));
   for (size_t i = 0; i < 10; i++) {
     EXPECT_EQ(false, a11.get(i));
     EXPECT_TRUE(a11.set(i, true));
     EXPECT_EQ(true, a11.get(i));
   }
-  EXPECT_TRUE(accessor.buildVarArray(buf, &allocator, *meta.getMeta(12), 10));
+  EXPECT_TRUE(accessor.rebuildVarArray(buf, &allocator, *meta.getMeta(12), 10));
   Array<int8_t> a12 = accessor.mget<int8_t>(buf, &allocator, *meta.getMeta(12));
   for (size_t i = 0; i < 10; i++) {
     EXPECT_EQ(50, a12.get(i));
     EXPECT_TRUE(a12.set(i, i));
     EXPECT_EQ(i, a12.get(i));
   }
-  EXPECT_TRUE(accessor.buildVarArray(buf, &allocator, *meta.getMeta(13), 10));
+  EXPECT_TRUE(accessor.rebuildVarArray(buf, &allocator, *meta.getMeta(13), 10));
   Array<int8_t> a13 = accessor.mget<int8_t>(buf, &allocator, *meta.getMeta(13));
   for (size_t i = 0; i < 10; i++) {
     EXPECT_EQ(0, a13.get(i));
     EXPECT_TRUE(a13.set(i, i));
     EXPECT_EQ(i, a13.get(i));
   }
-  EXPECT_TRUE(accessor.buildVarArray(buf, &allocator, *meta.getMeta(14), 10));
+  EXPECT_TRUE(accessor.rebuildVarArray(buf, &allocator, *meta.getMeta(14), 10));
   Array<float> a14 = accessor.mget<float>(buf, &allocator, *meta.getMeta(14));
   for (size_t i = 0; i < 10; i++) {
     EXPECT_FLOAT_EQ(0, a14.get(i));
     EXPECT_TRUE(a14.set(i, i * 0.1));
     EXPECT_FLOAT_EQ(i * 0.1, a14.get(i));
   }
-  EXPECT_TRUE(accessor.buildVarArray(buf, &allocator, *meta.getMeta(15), 10));
+  EXPECT_TRUE(accessor.rebuildVarArray(buf, &allocator, *meta.getMeta(15), 10));
   Array<std::string_view> a15 =
       accessor.mget<std::string_view>(buf, &allocator, *meta.getMeta(15));
   for (size_t i = 0; i < 10; i++) {
