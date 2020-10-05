@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.6)
 
 # Define project
-project(crystal VERSION 0.2.0)
+project(crystal VERSION 0.3.0)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake-scripts)
 

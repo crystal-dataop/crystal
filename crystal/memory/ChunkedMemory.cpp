@@ -32,13 +32,11 @@ bool ChunkedMemory::reset() {
 }
 
 int64_t ChunkedMemory::allocate(size_t size) {
-  if (blocks_.empty() || blocks_.back().used + size > blockCapacity_) {
-    Block block;
-    block.offset = getAllocatedSize();
-    block.buf.reset(new char[blockCapacity_]);
-    blocks_.push_back(std::move(block));
+  if (blocks_.empty() || size > blocks_.back().capacity) {
+    blocks_.emplace_back(std::max(size, blockCapacity_), getAllocatedSize());
   }
   int64_t offset = blocks_.back().current();
+  blocks_.back().capacity -= size;
   blocks_.back().used += size;
   return ++offset;
 }

@@ -53,9 +53,15 @@ class ChunkedMemory : public Memory {
 
  private:
   struct Block {
+    size_t capacity{0};
+    size_t used{0};
     int64_t offset{0};
-    int64_t used{0};
     std::unique_ptr<char[]> buf;
+
+    Block(size_t capacity_, int64_t offset_)
+        : capacity(capacity_), offset(offset_) {
+      buf.reset(new char[capacity]);
+    }
 
     int64_t current() const {
       return offset + used;
