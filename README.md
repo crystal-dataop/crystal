@@ -3,6 +3,7 @@
 Crystal is a data storage, analysis and retrieval library. The purpose is to
 solve the analysis and retrieval of data in big data scenarios.
 
+- scalable and easy-to-use data analysis op library
 - support kv storage
 - support bitmap and vector(faiss) index
 - supply an HTTP+JSON request and response service demo
