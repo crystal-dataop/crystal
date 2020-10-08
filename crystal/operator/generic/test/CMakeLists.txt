@@ -2,4 +2,5 @@
 
 test_sources(
   SerializeTest.cpp
+  SliceTest.cpp
 )
