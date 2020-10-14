@@ -193,6 +193,6 @@ set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set(CPACK_PACKAGE_CONTACT "yeolar@qq.com")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Crystal Data OP library.")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libasio-dev,libdouble-conversion-dev,libgflags-dev,libopenblas-dev,python-numpy")
 include(CPack)
 
