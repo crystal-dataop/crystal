@@ -16,6 +16,8 @@
 
 #include "crystal/foundation/Conv.h"
 
+#include <algorithm>
+
 namespace crystal {
 namespace detail {
 

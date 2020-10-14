@@ -18,6 +18,7 @@
 
 #include <array>
 #include <cctype>
+#include <cstdarg>
 #include <cstdio>
 
 #include "crystal/crystal-config.h"

@@ -17,6 +17,7 @@
 #include "crystal/foundation/ThreadName.h"
 
 #include <array>
+#include <cstring>
 #include <type_traits>
 
 namespace crystal {

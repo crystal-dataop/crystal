@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <cassert>
 #include <string>
 
 #include "crystal/memory/MMapFile.h"
