@@ -17,7 +17,7 @@ class ClientSession {
                 std::unique_ptr<asio::streambuf> request_streambuf_)
       : connection(std::move(connection_)),
         request_streambuf(std::move(request_streambuf_)),
-        response(new ClientResponse(max_response_streambuf_size, connection)) {}
+        response(new ClientResponse<SocketT>(max_response_streambuf_size, connection)) {}
 
   std::shared_ptr<Connection<SocketT>> connection;
   std::unique_ptr<asio::streambuf> request_streambuf;

@@ -14,6 +14,7 @@ include(Functions)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 find_package(Threads REQUIRED)
 find_package(DoubleConversion REQUIRED)
+find_package(Asio REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(GFlags REQUIRED)
 # Faiss
@@ -47,6 +48,9 @@ link_libraries(
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
 )
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+  link_libraries(stdc++fs)
+endif()
 
 include_directories(
   ${PROJECT_SOURCE_DIR}
@@ -193,6 +197,6 @@ set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set(CPACK_PACKAGE_CONTACT "yeolar@qq.com")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Crystal Data OP library.")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libasio-dev,libdouble-conversion-dev,libgflags-dev,libopenblas-dev,python-numpy")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libdouble-conversion-dev,libgflags-dev,libopenblas-dev,python-numpy")
 include(CPack)
 
