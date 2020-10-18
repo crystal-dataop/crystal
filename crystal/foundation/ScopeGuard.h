@@ -25,6 +25,8 @@
 #include <functional>
 #include <new>
 
+#include "crystal/foundation/Preprocessor.h"
+
 namespace crystal {
 
 namespace detail {
@@ -197,16 +199,6 @@ operator+(detail::ScopeGuardOnExit, FunctionType&& fn) {
 } // namespace detail
 
 } // namespace crystal
-
-#ifndef CRYSTAL_ANONYMOUS_VARIABLE
-#define CRYSTAL_CONCATENATE_IMPL(s1, s2) s1##s2
-#define CRYSTAL_CONCATENATE(s1, s2) CRYSTAL_CONCATENATE_IMPL(s1, s2)
-#ifdef __COUNTER__
-#define CRYSTAL_ANONYMOUS_VARIABLE(str) CRYSTAL_CONCATENATE(str, __COUNTER__)
-#else
-#define CRYSTAL_ANONYMOUS_VARIABLE(str) CRYSTAL_CONCATENATE(str, __LINE__)
-#endif
-#endif
 
 #define CRYSTAL_SCOPE_EXIT \
   auto CRYSTAL_ANONYMOUS_VARIABLE(SCOPE_EXIT_STATE) \
