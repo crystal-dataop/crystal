@@ -559,7 +559,7 @@ void ServerBase<SocketT>::write(
       void(std::shared_ptr<Response>,
            std::shared_ptr<Request>)>& resource_function) {
   auto response = std::shared_ptr<Response>(
-      new ServerResponse(session, config.timeout_content),
+      new ServerResponse<SocketT>(session, config.timeout_content),
       [this](Response* response_ptr) {
         auto response = std::shared_ptr<Response>(response_ptr);
         response->send_on_delete([this, response](const std::error_code& ec) {

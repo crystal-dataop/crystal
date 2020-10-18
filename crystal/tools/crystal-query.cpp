@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <climits>
 #include <gflags/gflags.h>
 
 #include "crystal/foundation/File.h"
