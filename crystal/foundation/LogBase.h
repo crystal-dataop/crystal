@@ -19,7 +19,6 @@
 #include <iostream>
 #include <mutex>
 #include <string>
-#include <thread>
 
 #include "crystal/foundation/AtomicLinkedList.h"
 #include "crystal/foundation/FixedStream.h"
@@ -89,7 +88,6 @@ class BaseLogger {
   size_t splitSize_;
   bool async_;
 
-  std::thread handle_;
   std::mutex lock_;
   AtomicLinkedList<std::string> queue_;
 };

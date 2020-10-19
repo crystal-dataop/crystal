@@ -18,6 +18,7 @@
 
 #include <filesystem>
 #include <iomanip>
+#include <thread>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -96,9 +97,9 @@ BaseLogger::BaseLogger(const std::string& name)
     rotate_(0),
     splitSize_(0),
     async_(false) {
-  handle_ = std::thread(&BaseLogger::run, this);
-  handle_.detach();
-  setThreadName(handle_.get_id(), "LogThread");
+  std::thread handle = std::thread(&BaseLogger::run, this);
+  setThreadName(handle.get_id(), "LogThread");
+  handle.detach();
 }
 
 BaseLogger::~BaseLogger() {
