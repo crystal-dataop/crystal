@@ -27,3 +27,9 @@ brew install asio double-conversion gflags omp  # for mac
 ./build.sh
 cd _build && make test
 ```
+
+Website & docs:
+
+- English: https://crystal-dataop.github.io/en/
+- 中文: https://crystal-dataop.github.io
+
