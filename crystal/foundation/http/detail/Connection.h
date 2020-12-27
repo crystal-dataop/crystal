@@ -32,7 +32,12 @@ class Connection : public std::enable_shared_from_this<Connection<SocketT>> {
     }
 
     timer = std::make_unique<asio::steady_timer>(
-        socket->get_executor(), std::chrono::seconds(seconds));
+#if ASIO_VERSION >= 101300
+        socket->get_executor(),
+#else
+        socket->get_io_context(),
+#endif
+        std::chrono::seconds(seconds));
 
     // To avoid keeping Connection instance alive longer than needed
     std::weak_ptr<Connection> self_weak(this->shared_from_this());
