@@ -31,6 +31,8 @@
 *.out
 *.app
 
+*.pyc
+
 /_build
 /_deps
 /crystal/crystal-config.h
