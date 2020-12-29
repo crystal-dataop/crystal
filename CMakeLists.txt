@@ -21,6 +21,8 @@ find_package(GFlags REQUIRED)
 find_package(Faiss REQUIRED)
 find_package(BLAS REQUIRED)
 find_package(OMP REQUIRED)
+# RdKafka
+find_package(RdKafka REQUIRED)
 
 # Optional packages
 find_package(GTest)
@@ -45,6 +47,7 @@ link_libraries(
   ${GFLAGS_LIBRARIES}
   ${FAISS_LIBRARY}
   ${BLAS_LIBRARIES}
+  ${RDKAFKA_LIBRARY}
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
 )
