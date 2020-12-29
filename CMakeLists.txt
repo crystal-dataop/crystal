@@ -87,6 +87,7 @@ configure_file(
 
 # Work on all sub directories
 build_directory(crystal _base)
+build_directory(crystal/bridge/kafka)
 build_directory(crystal/dataframe)
 build_directory(crystal/foundation)
 build_directory(crystal/foundation/http)
@@ -109,6 +110,7 @@ build_directory(crystal/strategy)
 build_directory(crystal/type)
 
 add_library(crystal
+  $<TARGET_OBJECTS:crystal_bridge_kafka>
   $<TARGET_OBJECTS:crystal_dataframe>
   $<TARGET_OBJECTS:crystal_foundation>
   $<TARGET_OBJECTS:crystal_foundation_http>
