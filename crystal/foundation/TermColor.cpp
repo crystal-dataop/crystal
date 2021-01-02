@@ -19,6 +19,8 @@
 
 namespace crystal {
 
+constexpr const char* TermColorWrapper::end;
+
 std::string TermColorWrapper::operator()(const std::string& s, bool end) const {
   std::string out = "\x1b[";
   if (bold_) toAppend(&out, "1;");

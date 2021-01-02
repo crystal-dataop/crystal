@@ -33,6 +33,8 @@ class TermColorWrapper {
 
   std::string operator()(const std::string& s, bool end = true) const;
 
+  static constexpr const char* end = "\x1b[0m";
+
  private:
   int color_{-1};
   int backgroundColor_{-1};
@@ -40,15 +42,7 @@ class TermColorWrapper {
   bool underline_{false};
 };
 
-class TermColorEnd {
- public:
-  std::string operator()() const {
-    return "\x1b[0m";
-  }
-};
-
 std::ostream& operator<<(std::ostream& out, const TermColorWrapper& c);
-std::ostream& operator<<(std::ostream& out, const TermColorEnd& e);
 
 template <TermColorWrapper::Color c>
 class TermColor : public TermColorWrapper {
@@ -90,11 +84,6 @@ inline TermColorWrapper& TermColorWrapper::underline() {
 
 inline std::ostream& operator<<(std::ostream& out, const TermColorWrapper& c) {
   out << c("", false);
-  return out;
-}
-
-inline std::ostream& operator<<(std::ostream& out, const TermColorEnd& e) {
-  out << e();
   return out;
 }
 
