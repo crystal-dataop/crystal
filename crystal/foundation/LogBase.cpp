@@ -18,10 +18,12 @@
 
 #include <filesystem>
 #include <iomanip>
+#include <iterator>
 #include <thread>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #include "crystal/foundation/Conv.h"
 #include "crystal/foundation/File.h"
@@ -53,15 +55,32 @@ inline char getLevelLabel(int level) {
   return level >= 0 ? "DIWEF"[level] : 'V';
 }
 
-size_t writeLogHeader(char* buffer,
+size_t writeLogHeader(bool istty,
+                      char* buffer,
                       size_t size,
                       int level,
                       const char* file,
                       int line,
                       const char* traceid) {
+  static std::string sTTYColors[] = {
+    "\x1b[34m",
+    "\x1b[37m",
+    "\x1b[33m",
+    "\x1b[1;31m",
+    "\x1b[1;31m",
+    "\x1b[35m",
+  };
+
   char* p = buffer;
   size_t n = size;
   ssize_t r;
+
+  if (istty && level != LOG_INFO) {
+    auto& c = sTTYColors[level >= 0 ? level : std::size(sTTYColors) - 1];
+    memcpy(p, c.data(), c.size());
+    p += c.size();
+    n -= c.size();
+  }
 
   *p++ = '[';
   *p++ = getLevelLabel(level);
@@ -80,6 +99,12 @@ size_t writeLogHeader(char* buffer,
   p += r;
   n -= r;
 
+  if (istty && level != LOG_INFO) {
+    static std::string sTTYColorEnd = "\x1b[0m";
+    memcpy(p, sTTYColorEnd.data(), sTTYColorEnd.size());
+    p += sTTYColorEnd.size();
+    n -= sTTYColorEnd.size();
+  }
   if (traceid) {
     r = snprintf(p, n, "trace(%s) ", traceid);
     p += r;
@@ -153,6 +178,10 @@ void BaseLogger::setOptions(const Options& opts) {
   setAsync(opts.async);
 }
 
+bool BaseLogger::isTTY() const {
+  return fd_ >= 0 ? isatty(fd_) : true;
+}
+
 void BaseLogger::open() {
   // Failed to -1, will use stderr.
   fd_ = ::open(file_.c_str(), O_RDWR | O_APPEND | O_CREAT, 0666);
@@ -209,6 +238,7 @@ LogMessage::LogMessage(
   , errno_(errno) {
   out_.advance(
       detail::writeLogHeader(
+          logger_->isTTY(),
           buf_, kBufSize, level, file, line,
           traceid.empty() ? nullptr : traceid.c_str()));
 }

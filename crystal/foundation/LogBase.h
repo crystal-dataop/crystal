@@ -70,6 +70,8 @@ class BaseLogger {
   void setAsync(bool async);
   void setOptions(const Options& opts);
 
+  bool isTTY() const;
+
   void run();
 
  private:
