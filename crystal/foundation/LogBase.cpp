@@ -86,7 +86,7 @@ size_t writeLogHeader(bool istty,
   *p++ = getLevelLabel(level);
   n -= 2;
 
-  uint64_t now = timestampNow();
+  uint64_t now = sysTimestampNow();
   time_t t = now / 1000000;
   struct tm tm;
   ::localtime_r(&t, &tm);

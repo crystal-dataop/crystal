@@ -43,6 +43,11 @@ inline uint64_t elapsed(uint64_t ts) {
   return timestampNow() - ts;
 }
 
+inline uint64_t sysTimestampNow() {
+  return std::chrono::duration_cast<std::chrono::microseconds>(
+      std::chrono::system_clock::now().time_since_epoch()).count();
+}
+
 inline struct timeval toTimeval(uint64_t t) {
   return {
     time_t(t / 1000000),
