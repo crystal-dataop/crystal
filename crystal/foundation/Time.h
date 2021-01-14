@@ -68,4 +68,9 @@ inline std::string timeNowPrintf(const char *format) {
   return timePrintf(time(nullptr), format);
 }
 
+inline void sleep(time_t t) {
+  struct timespec spec = { t, 0 };
+  nanosleep(&spec, nullptr);
+}
+
 } // namespace crystal
