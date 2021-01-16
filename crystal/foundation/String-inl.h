@@ -146,6 +146,22 @@ void split(const Delim& delimiter,
     ignoreEmpty);
 }
 
+template <
+    class OutputValueType,
+    class Delim,
+    class String,
+    class OutputIterator>
+void splitTo(const Delim& delimiter,
+             const String& input,
+             OutputIterator out,
+             bool ignoreEmpty) {
+  detail::internalSplit<OutputValueType>(
+    detail::prepareDelim(delimiter),
+    std::string_view(input),
+    out,
+    ignoreEmpty);
+}
+
 template <bool exact, class Delim, class... OutputTypes>
 typename std::enable_if<sizeof...(OutputTypes) >= 1, bool>::type
 split(const Delim& delimiter, std::string_view input, OutputTypes&... outputs) {

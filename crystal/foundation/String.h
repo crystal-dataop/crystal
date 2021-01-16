@@ -45,6 +45,16 @@ void split(const Delim& delimiter,
            std::vector<OutputType>& out,
            const bool ignoreEmpty = false);
 
+template <
+    class OutputValueType,
+    class Delim,
+    class String,
+    class OutputIterator>
+void splitTo(const Delim& delimiter,
+             const String& input,
+             OutputIterator out,
+             const bool ignoreEmpty = false);
+
 template <bool exact = true, class Delim, class... OutputTypes>
 typename std::enable_if<sizeof...(OutputTypes) >= 1, bool>::type
 split(const Delim& delimiter, std::string_view input, OutputTypes&... outputs);
