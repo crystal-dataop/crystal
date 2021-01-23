@@ -56,7 +56,7 @@ void splitTo(const Delim& delimiter,
              const bool ignoreEmpty = false);
 
 template <bool exact = true, class Delim, class... OutputTypes>
-typename std::enable_if<sizeof...(OutputTypes) >= 1, bool>::type
+typename std::enable_if<sizeof...(OutputTypes) >= 2, bool>::type
 split(const Delim& delimiter, std::string_view input, OutputTypes&... outputs);
 
 template <class Delim, class Iterator>

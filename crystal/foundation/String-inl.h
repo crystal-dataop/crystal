@@ -163,7 +163,7 @@ void splitTo(const Delim& delimiter,
 }
 
 template <bool exact, class Delim, class... OutputTypes>
-typename std::enable_if<sizeof...(OutputTypes) >= 1, bool>::type
+typename std::enable_if<sizeof...(OutputTypes) >= 2, bool>::type
 split(const Delim& delimiter, std::string_view input, OutputTypes&... outputs) {
   return detail::splitFixed<exact>(
       detail::prepareDelim(delimiter), input, outputs...);
