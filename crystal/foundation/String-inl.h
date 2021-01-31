@@ -16,11 +16,57 @@
 
 #pragma once
 
+#include <array>
 #include <type_traits>
 
 #include "crystal/foundation/Conv.h"
 
 namespace crystal {
+
+namespace detail {
+
+// Map from the character code to the hex value, or 16 if invalid hex char.
+extern const std::array<unsigned char, 256> hexTable;
+
+} // namespace detail
+
+template <class InputString, class OutputString>
+bool hexlify(const InputString& input, OutputString& output,
+             bool append_output) {
+  if (!append_output) {
+    output.clear();
+  }
+
+  static char hexValues[] = "0123456789abcdef";
+  auto j = output.size();
+  output.resize(2 * input.size() + output.size());
+  for (size_t i = 0; i < input.size(); ++i) {
+    int ch = input[i];
+    output[j++] = hexValues[(ch >> 4) & 0xf];
+    output[j++] = hexValues[ch & 0xf];
+  }
+  return true;
+}
+
+template <class InputString, class OutputString>
+bool unhexlify(const InputString& input, OutputString& output) {
+  if (input.size() % 2 != 0) {
+    return false;
+  }
+  output.resize(input.size() / 2);
+  int j = 0;
+
+  for (size_t i = 0; i < input.size(); i += 2) {
+    int highBits = detail::hexTable[static_cast<uint8_t>(input[i])];
+    int lowBits = detail::hexTable[static_cast<uint8_t>(input[i + 1])];
+    if ((highBits | lowBits) & 0x10) {
+      // One of the characters wasn't a hex digit
+      return false;
+    }
+    output[j++] = (highBits << 4) + lowBits;
+  }
+  return true;
+}
 
 namespace detail {
 

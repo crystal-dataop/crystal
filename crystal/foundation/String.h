@@ -37,6 +37,29 @@ inline constexpr size_t constexpr_strlen(const char* s) {
 std::string stringPrintf(const char* format, ...);
 std::string stringVPrintf(const char* format, va_list ap);
 
+template <class InputString, class OutputString>
+bool hexlify(const InputString& input, OutputString& output,
+             bool append=false);
+
+std::string hexlify(std::string_view input) {
+  std::string output;
+  if (!hexlify(input, output)) {
+    throw std::runtime_error("hexlify failed");
+  }
+  return output;
+}
+
+template <class InputString, class OutputString>
+bool unhexlify(const InputString& input, OutputString& output);
+
+std::string unhexlify(std::string_view input) {
+  std::string output;
+  if (!unhexlify(input, output)) {
+    throw std::domain_error("unhexlify called with non-hex input");
+  }
+  return output;
+}
+
 std::string errnoStr(int err);
 
 template <class Delim, class String, class OutputType>

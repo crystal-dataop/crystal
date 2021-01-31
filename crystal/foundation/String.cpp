@@ -22,11 +22,31 @@
 #include <cstdio>
 
 #include "crystal/crystal-config.h"
+#include "crystal/foundation/Array.h"
 #include "crystal/foundation/Conv.h"
 #include "crystal/foundation/Logging.h"
 #include "crystal/foundation/ScopeGuard.h"
 
 namespace crystal {
+
+namespace detail {
+
+struct string_table_hex_make_item {
+  constexpr unsigned char operator()(std::size_t index) const {
+    // clang-format off
+    return
+        index >= '0' && index <= '9' ? index - '0' :
+        index >= 'a' && index <= 'f' ? index - 'a' + 10 :
+        index >= 'A' && index <= 'F' ? index - 'A' + 10 :
+        16;
+    // clang-format on
+  }
+};
+
+constexpr decltype(hexTable) hexTable =
+    make_array_with<256>(string_table_hex_make_item{});
+
+} // namespace detail
 
 static inline bool is_space(char c) {
   return c == ' ' || c == '\n' || c == '\t' || c == '\r';
