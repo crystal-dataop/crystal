@@ -41,7 +41,7 @@ template <class InputString, class OutputString>
 bool hexlify(const InputString& input, OutputString& output,
              bool append=false);
 
-std::string hexlify(std::string_view input) {
+inline std::string hexlify(std::string_view input) {
   std::string output;
   if (!hexlify(input, output)) {
     throw std::runtime_error("hexlify failed");
@@ -52,7 +52,7 @@ std::string hexlify(std::string_view input) {
 template <class InputString, class OutputString>
 bool unhexlify(const InputString& input, OutputString& output);
 
-std::string unhexlify(std::string_view input) {
+inline std::string unhexlify(std::string_view input) {
   std::string output;
   if (!unhexlify(input, output)) {
     throw std::domain_error("unhexlify called with non-hex input");
