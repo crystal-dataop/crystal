@@ -20,6 +20,7 @@
 #include <cstdint>
 #include <ctime>
 #include <string>
+#include <string_view>
 #include <sys/time.h>
 
 namespace crystal {
@@ -67,6 +68,8 @@ std::string timePrintf(time_t t, const char *format);
 inline std::string timeNowPrintf(const char *format) {
   return timePrintf(time(nullptr), format);
 }
+
+time_t timeParse(std::string_view time, const char* format);
 
 inline void sleep(time_t t) {
   struct timespec spec = { t, 0 };

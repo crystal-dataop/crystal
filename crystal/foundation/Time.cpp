@@ -49,4 +49,12 @@ std::string timePrintf(time_t t, const char *format) {
   return output;
 }
 
+time_t timeParse(std::string_view time, const char* format) {
+  struct tm tm{};
+  if (strptime(time.data(), format, &tm) == nullptr) {
+    return 0;
+  }
+  return mktime(&tm);
+}
+
 } // namespace crystal
