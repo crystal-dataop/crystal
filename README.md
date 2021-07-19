@@ -30,6 +30,6 @@ cd _build && make test
 
 Website & docs:
 
-- English: https://crystal-dataop.github.io/en/
-- 中文: https://crystal-dataop.github.io
+- English: https://cdataop.rddoc.com/en/
+- 中文: https://cdataop.rddoc.com
 
