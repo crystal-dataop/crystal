@@ -30,6 +30,6 @@ cd _build && make test
 
 Website & docs:
 
-- English: https://cdataop.rddoc.com/en/
-- 中文: https://cdataop.rddoc.com
+- English: https://cdataop.com/en/
+- 中文: https://cdataop.com
 
