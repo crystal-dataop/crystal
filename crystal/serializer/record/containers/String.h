@@ -18,6 +18,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <initializer_list>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -27,7 +28,7 @@
 
 namespace crystal {
 
-class String {
+class string {
  public:
   using value_type = char;
   using reference = value_type&;
@@ -35,84 +36,107 @@ class String {
   using iterator = value_type*;
   using const_iterator = const value_type*;
 
-  String() noexcept = default;
+  string() noexcept = default;
 
-  ~String() {
+  ~string() {
     if (offset_) {
-      std::free(offset_.get());
+      uint32_t* old = offset_.get();
       offset_ = nullptr;
+      if (*old >> 31 == 0) {
+        std::free(old);
+      }
     }
   }
 
-  String(size_t n, char c) {
+  string(size_t n, char c) {
     assign(n, c);
   }
-  String(const String& other, size_t pos) {
+  string(const string& other, size_t pos) {
     assign(other, pos, other.size() - pos);
   }
-  String(const String& other, size_t pos, size_t n) {
+  string(const string& other, size_t pos, size_t n) {
     assign(other, pos, n);
   }
-  String(const char* s, size_t n) {
+  string(const char* s, size_t n) {
     assign(s, n);
   }
-  String(const char* s) {
+  string(const char* s) {
     assign(s);
   }
-  String(const String& other) {
+  template <class InputIt>
+  string(InputIt first, InputIt last) {
+    assign(first, last);
+  }
+  string(const string& other) {
     assign(other);
   }
-  String(String&& other) {
+  string(string&& other) {
     std::swap(offset_, other.offset_);
   }
+  string(std::initializer_list<char> list) {
+    assign(list);
+  }
 
-  String& operator=(const String& other) {
+  string& operator=(const string& other) {
     return assign(other);
   }
-  String& operator=(String&& other) noexcept {
+  string& operator=(string&& other) noexcept {
     return assign(other);
   }
-  String& operator=(const char* s) {
+  string& operator=(const char* s) {
     return assign(s);
   }
+  string& operator=(std::initializer_list<char> list) {
+    return assign(list);
+  }
 
-  String& assign(size_t n, char c) {
-    char* p = reserve(n);
-    std::memset(p, c, n);
-    reset(p);
+  string& assign(size_t n, char c) {
+    write(n, [&](char* p, size_t n) { std::memset(p, c, n); });
     return *this;
   }
-  String& assign(const String& str) {
+  string& assign(const string& str) {
     size_t n = str.size();
-    char* p = reserve(n);
-    std::memcpy(p, str.data(), n);
-    reset(p);
+    write(n, [&](char* p, size_t n) { std::memcpy(p, str.data(), n); });
     return *this;
   }
-  String& assign(const String& str, size_t pos, size_t n = npos) {
+  string& assign(const string& str, size_t pos, size_t n = npos) {
     if (pos <= str.size()) {
       n = std::min(n, str.size() - pos);
-      char* p = reserve(n);
-      std::memcpy(p, str.data() + pos, n);
-      reset(p);
+      write(n, [&](char* p, size_t n) { std::memcpy(p, str.data() + pos, n); });
     }
     return *this;
   }
-  String& assign(String&& str) noexcept {
+  string& assign(string&& str) noexcept {
     std::swap(offset_, str.offset_);
     return *this;
   }
-  String& assign(const char* s, size_t n) {
-    char* p = reserve(n);
-    std::memcpy(p, s, n);
-    reset(p);
+  string& assign(const char* s, size_t n) {
+    write(n, [&](char* p, size_t n) { std::memcpy(p, s, n); });
     return *this;
   }
-  String& assign(const char* s) {
+  string& assign(const char* s) {
     size_t n = std::strlen(s);
-    char* p = reserve(n);
-    std::memcpy(p, s, n);
-    reset(p);
+    write(n, [&](char* p, size_t n) { std::memcpy(p, s, n); });
+    return *this;
+  }
+  template <class InputIt>
+  string& assign(InputIt first, InputIt last) {
+    size_t n = last - first;
+    write(n, [&](char* p, size_t) {
+      for (char* it = p; first != last; ) {
+        *it++ = *first++;
+      }
+    });
+    return *this;
+  }
+  string& assign(std::initializer_list<char> list) {
+    size_t n = list.size();
+    write(n, [&](char* p, size_t) {
+      char* it = p;
+      for (const char& c : list) {
+        *it++ = c;
+      }
+    });
     return *this;
   }
 
@@ -150,7 +174,9 @@ class String {
     return operator[](size() - 1);
   }
 
-  char* data() noexcept = delete;
+  char* data() noexcept {
+    return offset_ ? reinterpret_cast<char*>(offset_ + 1) : nullptr;
+  }
   const char* data() const noexcept {
     return offset_ ? reinterpret_cast<const char*>(offset_ + 1) : nullptr;
   }
@@ -164,12 +190,16 @@ class String {
     return std::string_view(data(), size());
   }
 
-  iterator begin() noexcept = delete;
+  iterator begin() noexcept {
+    return data();
+  }
   const_iterator begin() const noexcept {
     return data();
   }
 
-  iterator end() noexcept = delete;
+  iterator end() noexcept {
+    return data() + size();
+  }
   const_iterator end() const noexcept {
     return data() + size();
   }
@@ -179,22 +209,35 @@ class String {
   }
 
   size_t size() const noexcept {
-    return offset_ ? *offset_ : 0;
+    return offset_ ? *offset_ & 0x7fffffff : 0;
   }
   size_t length() const noexcept {
     return size();
   }
 
-  char* reserve(size_t n = 0) {
+  template <class F>
+  void write(size_t n, F f) {
+    if (n >> 31 > 0) {
+      throw std::overflow_error("string::write");
+    }
     uint32_t* p = reinterpret_cast<uint32_t*>(
         std::malloc(n + sizeof(uint32_t)));
     *p = n;
-    return reinterpret_cast<char*>(p + 1);
+    if (n > 0) {
+      f(reinterpret_cast<char*>(p + 1), n);
+    }
+    if (offset_) {
+      uint32_t* old = offset_.get();
+      offset_ = p;
+      if (*old >> 31 == 0) {
+        std::free(old);
+      }
+    } else {
+      offset_ = p;
+    }
   }
-  void reset(char* p) {
-    this->~String();
-    offset_ = reinterpret_cast<uint32_t*>(p) - 1;
-  }
+
+  friend void serialize(const string& from, string& to, uint8_t* buffer);
 
   static const size_t npos = -1;
 

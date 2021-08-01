@@ -38,7 +38,8 @@ namespace crystal {
   x(UINT64),                      \
   x(FLOAT),                       \
   x(DOUBLE),                      \
-  x(STRING)
+  x(STRING),                      \
+  x(TUPLE)
 
 #define CRYSTAL_DATA_TYPE_ENUM(type) type
 
