@@ -21,7 +21,7 @@
 namespace crystal {
 
 template <class T>
-size_t size(uint8_t* dst, const untyped_tuple::Meta::ElementMeta& em) {
+size_t bsize(uint8_t* dst, const untyped_tuple::meta::element& em) {
   if (em.count == 0) {
     return bufferSize(*reinterpret_cast<vector<T>*>(dst));
   } else {
@@ -34,7 +34,7 @@ size_t size(uint8_t* dst, const untyped_tuple::Meta::ElementMeta& em) {
 }
 
 template <class T>
-void place(uint8_t* dst, const untyped_tuple::Meta::ElementMeta& em) {
+void place(uint8_t* dst, const untyped_tuple::meta::element& em) {
   if (em.count == 0) {
     new (dst) vector<T>();
   } else {
@@ -46,20 +46,19 @@ void place(uint8_t* dst, const untyped_tuple::Meta::ElementMeta& em) {
 
 template <>
 void place<untyped_tuple>(
-    uint8_t* dst, const untyped_tuple::Meta::ElementMeta& em) {
+    uint8_t* dst, const untyped_tuple::meta::element& em) {
   if (em.count == 0) {
     new (dst) vector<untyped_tuple>();
   } else {
     for (uint32_t i = 0; i < em.count; ++i) {
       new (reinterpret_cast<untyped_tuple*>(dst) + i)
-        untyped_tuple(em.subTuple);
+        untyped_tuple(em.submeta);
     }
   }
 }
 
 template <class T>
-void place(
-    uint8_t* dst, uint8_t* src, const untyped_tuple::Meta::ElementMeta& em) {
+void place(uint8_t* dst, uint8_t* src, const untyped_tuple::meta::element& em) {
   if (em.count == 0) {
     new (dst) vector<T>(*reinterpret_cast<vector<T>*>(src));
   } else {
@@ -70,7 +69,7 @@ void place(
 }
 
 template <class T>
-void init(uint8_t* dst, const untyped_tuple::Meta::ElementMeta& em) {
+void init(uint8_t* dst, const untyped_tuple::meta::element& em) {
   if (em.count == 0) {
     *reinterpret_cast<vector<T>*>(dst) = vector<T>();
   } else {
@@ -82,19 +81,18 @@ void init(uint8_t* dst, const untyped_tuple::Meta::ElementMeta& em) {
 
 template <>
 void init<untyped_tuple>(
-    uint8_t* dst, const untyped_tuple::Meta::ElementMeta& em) {
+    uint8_t* dst, const untyped_tuple::meta::element& em) {
   if (em.count == 0) {
     *reinterpret_cast<vector<untyped_tuple>*>(dst) = vector<untyped_tuple>();
   } else {
     for (uint32_t i = 0; i < em.count; ++i) {
-      *(reinterpret_cast<untyped_tuple*>(dst) + i) = untyped_tuple(em.subTuple);
+      *(reinterpret_cast<untyped_tuple*>(dst) + i) = untyped_tuple(em.submeta);
     }
   }
 }
 
 template <class T>
-void copy(
-    uint8_t* dst, uint8_t* src, const untyped_tuple::Meta::ElementMeta& em) {
+void copy(uint8_t* dst, uint8_t* src, const untyped_tuple::meta::element& em) {
   if (em.count == 0) {
     *reinterpret_cast<vector<T>*>(dst) = *reinterpret_cast<vector<T>*>(src);
   } else {
@@ -106,7 +104,7 @@ void copy(
 
 void untyped_tuple::reset() {
   if (offset_) {
-    for (auto& em : meta_->metas) {
+    for (auto& em : *meta_) {
       uint8_t* e = offset_ + em.offset;
       switch (em.type) {
 #define CASE(dt, t) \
@@ -131,8 +129,8 @@ void untyped_tuple::reset() {
       }
     }
   } else {
-    write(meta_->size, [&](uint8_t* p) {
-      for (auto& em : meta_->metas) {
+    write(meta_->fixed_size(), [&](uint8_t* p) {
+      for (auto& em : *meta_) {
         uint8_t* e = p + em.offset;
         switch (em.type) {
 #define CASE(dt, t) \
@@ -162,7 +160,7 @@ void untyped_tuple::reset() {
 
 void untyped_tuple::assign(const untyped_tuple& other) {
   if (offset_) {
-    for (auto& em : meta_->metas) {
+    for (auto& em : *meta_) {
       uint8_t* e = offset_ + em.offset;
       uint8_t* o = other.offset_ + em.offset;
       switch (em.type) {
@@ -188,8 +186,8 @@ void untyped_tuple::assign(const untyped_tuple& other) {
       }
     }
   } else {
-    write(meta_->size, [&](uint8_t* p) {
-      for (auto& em : meta_->metas) {
+    write(meta_->fixed_size(), [&](uint8_t* p) {
+      for (auto& em : *meta_) {
         uint8_t* e = p + em.offset;
         uint8_t* o = other.offset_ + em.offset;
         switch (em.type) {
@@ -220,11 +218,11 @@ void untyped_tuple::assign(const untyped_tuple& other) {
 
 size_t untyped_tuple::element_buffer_size(size_t i) const noexcept {
   if (offset_) {
-    auto& em = meta_->metas[i];
+    auto& em = (*meta_)[i];
     uint8_t* e = offset_ + em.offset;
     switch (em.type) {
 #define CASE(dt, t) \
-      case DataType::dt: return size<t>(e, em);
+      case DataType::dt: return bsize<t>(e, em);
 
       CASE(BOOL, bool)
       CASE(INT8, int8_t)

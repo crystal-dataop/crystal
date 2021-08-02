@@ -21,9 +21,15 @@
 #include <memory>
 #include <stdexcept>
 
+#include "crystal/serializer/record/AllocMask.h"
 #include "crystal/serializer/record/OffsetPtr.h"
 
 namespace crystal {
+
+template <class T>
+class vector;
+template <class T>
+void serialize(const vector<T>& from, vector<T>& to, void* buffer);
 
 template <class T>
 class vector {
@@ -40,7 +46,7 @@ class vector {
     if (offset_) {
       uint32_t* old = offset_.get();
       offset_ = nullptr;
-      if (*old >> 31 == 0) {
+      if (!mask(*old)) {
         std::free(old);
       }
     }
@@ -93,6 +99,7 @@ class vector {
       }
     });
   }
+  /*
   template <class InputIt>
   void assign(InputIt first, InputIt last) {
     size_t n = last - first;
@@ -102,6 +109,7 @@ class vector {
       }
     });
   }
+  */
   void assign(std::initializer_list<T> list) {
     size_t n = list.size();
     write(n, [&](T* p, size_t) {
@@ -172,12 +180,16 @@ class vector {
   }
 
   size_t size() const noexcept {
-    return offset_ ? *offset_ & 0x7fffffff : 0;
+    return offset_ ? unmaskValue(*offset_) : 0;
+  }
+
+  size_t fixed_size() const noexcept {
+    return offset_ ? unmaskValue(*offset_) * sizeof(T) + sizeof(uint32_t) : 0;
   }
 
   template <class F>
   void write(size_t n, F f) {
-    if (n >> 31 > 0) {
+    if (n >> kNoMaskBitCount<uint32_t> > 0) {
       throw std::overflow_error("vector::write");
     }
     uint32_t* p = reinterpret_cast<uint32_t*>(
@@ -189,7 +201,7 @@ class vector {
     if (offset_) {
       uint32_t* old = offset_.get();
       offset_ = p;
-      if (*old >> 31 == 0) {
+      if (!mask(*old)) {
         std::free(old);
       }
     } else {
@@ -197,7 +209,7 @@ class vector {
     }
   }
 
-  friend void serialize(const vector<T>& from, vector<T>& to, uint8_t* buffer);
+  friend void serialize<>(const vector<T>& from, vector<T>& to, void* buffer);
 
  private:
   OffsetPtr<uint32_t> offset_;

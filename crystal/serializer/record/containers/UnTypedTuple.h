@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <type_traits>
 
+#include "crystal/serializer/record/AllocMask.h"
 #include "crystal/serializer/record/OffsetPtr.h"
 #include "crystal/serializer/record/containers/Vector.h"
 #include "crystal/type/DataType.h"
@@ -38,39 +39,120 @@ inline constexpr auto is_untyped_tuple_v = is_untyped_tuple<T>::value;
 
 class untyped_tuple {
  public:
-  struct Meta {
-    struct ElementMeta {
+  struct meta {
+    struct element {
       DataType type;
       uint32_t count;
       uint32_t offset;
-      OffsetPtr<Meta> subTuple;
+      OffsetPtr<meta> submeta;
     };
 
-    template <class T, std::enable_if_t<!is_untyped_tuple_v<T>, int> = 0>
-    void addType(uint32_t count = 1);
-    template <class T, std::enable_if_t<is_untyped_tuple_v<T>, int> = 0>
-    void addType(Meta* subTuple, uint32_t count = 1);
+    ~meta() {
+      if (offset_) {
+        head* old = offset_.get();
+        offset_ = nullptr;
+        if (!old->mask) {
+          std::free(old);
+        }
+      }
+    }
 
-    std::vector<ElementMeta> metas;
-    size_t size{1};
+    void resize(size_t n) {
+      if (n == size()) {
+        return;
+      }
+      if (n >> kNoMaskBitCount<uint32_t> > 0) {
+        throw std::overflow_error("untyped_tuple::meta::resize");
+      }
+      head* p = reinterpret_cast<head*>(
+          std::malloc(n * sizeof(element) + sizeof(head)));
+      *reinterpret_cast<uint64_t*>(p) = 1;
+      if (offset_) {
+        head* old = offset_.get();
+        offset_ = p;
+        if (!old->mask) {
+          std::free(old);
+        }
+      } else {
+        offset_ = p;
+      }
+    }
+
+    size_t size() const noexcept {
+      return offset_ ? offset_->elem : 0;
+    }
+    size_t fixed_size() const noexcept {
+      return offset_ ? offset_->size : 0;
+    }
+
+    element& operator[](size_t i) {
+      return reinterpret_cast<element*>(offset_ + 1)[i];
+    }
+    const element& operator[](size_t i) const {
+      return reinterpret_cast<const element*>(offset_ + 1)[i];
+    }
+
+    const element* begin() const noexcept {
+      return offset_ ? reinterpret_cast<const element*>(offset_ + 1) : nullptr;
+    }
+    const element* end() const noexcept {
+      return begin() + size();
+    }
+
+    template <class T, std::enable_if_t<!is_untyped_tuple_v<T>, int> = 0>
+    void add_type(uint32_t count = 1) {
+      add_type<T>(nullptr, count);
+    }
+    template <class T, std::enable_if_t<is_untyped_tuple_v<T>, int> = 0>
+    void add_type(meta* submeta, uint32_t count = 1) {
+      add_type<T>(submeta, count);
+    }
+
+    friend void serialize(const untyped_tuple::meta& from,
+                          untyped_tuple::meta& to,
+                          uint8_t* buffer);
+
+   private:
+    template <class T>
+    void add_type(meta* submeta, uint32_t count) {
+      if (offset_) {
+        new (&operator[](offset_->elem)) element
+            {
+              DataTypeTraits<T>::value,
+              count,
+              offset_->size,
+              submeta
+            };
+        offset_->size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
+      }
+    }
+
+    struct head {
+      uint32_t mask : 1;
+      uint32_t elem : 31;
+      uint32_t size;
+    };
+
+    OffsetPtr<head> offset_;
   };
 
+ public:
   untyped_tuple() noexcept = delete;
 
   ~untyped_tuple() {
     if (offset_) {
       uint8_t* old = offset_.get();
       offset_ = nullptr;
-      if (*old >> 7 == 0) {
+      if (!mask(*old)) {
         std::free(old);
       }
     }
   }
 
-  explicit untyped_tuple(const Meta* meta) : meta_(meta) {
+  explicit untyped_tuple(const meta* meta) : meta_(meta) {
     reset();
   }
-  untyped_tuple(const Meta* meta, void* buffer) : meta_(meta) {
+  untyped_tuple(const meta* meta, void* buffer) : meta_(meta) {
     assign(buffer);
   }
   untyped_tuple(const untyped_tuple& other) {
@@ -98,27 +180,33 @@ class untyped_tuple {
 
   template <class T>
   T& at(size_t i) {
-    return *reinterpret_cast<T*>(offset_ + meta_->metas.at(i).offset);
+    if (i >= size()) {
+      throw std::out_of_range("untyped_tuple::at");
+    }
+    return get<T>(i);
   }
   template <class T>
   const T& at(size_t i) const {
-    return *reinterpret_cast<const T*>(offset_ + meta_->metas.at(i).offset);
+    if (i >= size()) {
+      throw std::out_of_range("untyped_tuple::at");
+    }
+    return get<T>(i);
   }
 
   template <class T>
   T& get(size_t i) {
-    return *reinterpret_cast<T*>(offset_ + meta_->metas[i].offset);
+    return *reinterpret_cast<T*>(offset_ + (*meta_)[i].offset);
   }
   template <class T>
   const T& get(size_t i) const {
-    return *reinterpret_cast<const T*>(offset_ + meta_->metas[i].offset);
+    return *reinterpret_cast<const T*>(offset_ + (*meta_)[i].offset);
   }
 
-  size_t tuple_size() const noexcept {
-    return meta_->metas.size();
+  size_t size() const noexcept {
+    return meta_->size();
   }
   size_t fixed_size() const noexcept {
-    return meta_->size;
+    return meta_->fixed_size();
   }
   size_t element_buffer_size(size_t i) const noexcept;
 
@@ -129,7 +217,7 @@ class untyped_tuple {
     if (offset_) {
       uint8_t* old = offset_.get();
       offset_ = p;
-      if (*old >> 7 == 0) {
+      if (!mask(*old)) {
         std::free(old);
       }
     } else {
@@ -137,38 +225,12 @@ class untyped_tuple {
     }
   }
 
-  const Meta* meta() const { return meta_; }
-
   friend void serialize(
-      const untyped_tuple& from, untyped_tuple& to, uint8_t* buffer);
+      const untyped_tuple& from, untyped_tuple& to, void* buffer);
 
  private:
   OffsetPtr<uint8_t> offset_;
-  OffsetPtr<Meta> meta_;
+  OffsetPtr<meta> meta_;
 };
-
-template <class T, std::enable_if_t<!is_untyped_tuple_v<T>, int>>
-void untyped_tuple::Meta::addType(uint32_t count) {
-  metas.push_back(
-      {
-        DataTypeTraits<T>::value,
-        count,
-        size,
-        nullptr
-      });
-  size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
-}
-
-template <class T, std::enable_if_t<is_untyped_tuple_v<T>, int>>
-void untyped_tuple::Meta::addType(Meta* subTuple, uint32_t count) {
-  metas.push_back(
-      {
-        DataTypeTraits<T>::value,
-        count,
-        size,
-        subTuple
-      });
-  size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
-}
 
 } // namespace crystal

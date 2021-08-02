@@ -57,39 +57,40 @@ size_t bufferSize(const array<T, N>& value) {
 
 template <class T>
 size_t bufferSize(const vector<T>& value) {
-  size_t n = value.size() * sizeof(T) + sizeof(uint32_t);
+  size_t n = value.fixed_size();
   for (auto& element : value) {
     n += bufferSize(element);
   }
   return n;
 }
 
+size_t bufferSize(const untyped_tuple::meta& value);
 size_t bufferSize(const untyped_tuple& value);
 
-inline void serialize(const bool&, bool&, uint8_t*) {
+inline void serialize(const bool&, bool&, void*) {
 }
 
 template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-inline void serialize(const T&, T&, uint8_t*) {
+inline void serialize(const T&, T&, void*) {
 }
 
-inline void serialize(const string& from, string& to, uint8_t* buffer) {
+inline void serialize(const string& from, string& to, void* buffer) {
   uint32_t* old = from.offset_.get();
   uint32_t* buf = reinterpret_cast<uint32_t*>(buffer);
-  std::memcpy(buf, old, from.size() + sizeof(uint32_t));
-  *buf &= 0x80000000;
+  std::memcpy(buf, old, bufferSize(from));
+  maskValue(*buf);
   to.offset_ = buf;
 }
 
 template <class T1, class T2>
 inline
-void serialize(const pair<T1, T2>& from, pair<T1, T2>& to, uint8_t* buffer) {
+void serialize(const pair<T1, T2>& from, pair<T1, T2>& to, void* buffer) {
   serialize(from.first, to.first, buffer);
   serialize(from.second, to.second, buffer + bufferSize(from.first));
 }
 
 template <class T, size_t N>
-void serialize(const array<T, N>& from, array<T, N>& to, uint8_t* buffer) {
+void serialize(const array<T, N>& from, array<T, N>& to, void* buffer) {
   for (size_t i = 0; i < N; ++i) {
     serialize(from[i], to[i], buffer);
     buffer += bufferSize(from[i]);
@@ -97,22 +98,26 @@ void serialize(const array<T, N>& from, array<T, N>& to, uint8_t* buffer) {
 }
 
 template <class T>
-void serialize(const vector<T>& from, vector<T>& to, uint8_t* buffer) {
+void serialize(const vector<T>& from, vector<T>& to, void* buffer) {
   uint32_t* old = from.offset_.get();
   uint32_t* buf = reinterpret_cast<uint32_t*>(buffer);
-  size_t n = from.size() * sizeof(T) + sizeof(uint32_t);
+  size_t n = from.fixed_size();
   std::memcpy(buf, old, n);
-  *buf &= 0x80000000;
-  buffer += n;
+  maskValue(*buf);
+  uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
+  p += n;
   for (size_t i = 0; i < from.size(); ++i) {
     serialize(reinterpret_cast<T*>(old + 1)[i],
               reinterpret_cast<T*>(buf + 1)[i],
-              buffer);
-    buffer += bufferSize(reinterpret_cast<T*>(old + 1)[i]);
+              p);
+    p += bufferSize(reinterpret_cast<T*>(old + 1)[i]);
   }
   to.offset_ = buf;
 }
 
-void serialize(const untyped_tuple& from, untyped_tuple& to, uint8_t* buffer);
+void serialize(const untyped_tuple::meta& from,
+               untyped_tuple::meta& to,
+               void* buffer);
+void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer);
 
 } // namespace crystal

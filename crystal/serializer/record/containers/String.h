@@ -24,6 +24,7 @@
 #include <string>
 #include <string_view>
 
+#include "crystal/serializer/record/AllocMask.h"
 #include "crystal/serializer/record/OffsetPtr.h"
 
 namespace crystal {
@@ -42,7 +43,7 @@ class string {
     if (offset_) {
       uint32_t* old = offset_.get();
       offset_ = nullptr;
-      if (*old >> 31 == 0) {
+      if (!mask(*old)) {
         std::free(old);
       }
     }
@@ -209,7 +210,7 @@ class string {
   }
 
   size_t size() const noexcept {
-    return offset_ ? *offset_ & 0x7fffffff : 0;
+    return offset_ ? unmaskValue(*offset_) : 0;
   }
   size_t length() const noexcept {
     return size();
@@ -217,7 +218,7 @@ class string {
 
   template <class F>
   void write(size_t n, F f) {
-    if (n >> 31 > 0) {
+    if (n >> kNoMaskBitCount<uint32_t> > 0) {
       throw std::overflow_error("string::write");
     }
     uint32_t* p = reinterpret_cast<uint32_t*>(
@@ -229,7 +230,7 @@ class string {
     if (offset_) {
       uint32_t* old = offset_.get();
       offset_ = p;
-      if (*old >> 31 == 0) {
+      if (!mask(*old)) {
         std::free(old);
       }
     } else {
@@ -237,7 +238,7 @@ class string {
     }
   }
 
-  friend void serialize(const string& from, string& to, uint8_t* buffer);
+  friend void serialize(const string& from, string& to, void* buffer);
 
   static const size_t npos = -1;
 

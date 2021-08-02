@@ -17,29 +17,35 @@
 #include <gtest/gtest.h>
 
 #include "crystal/serializer/record/containers/Serialization.h"
-#include "crystal/serializer/record/containers/String.h"
+#include "crystal/serializer/record/containers/Vector.h"
 
 using namespace crystal;
 
-TEST(string, assign) {
-  string str;
-  str.assign("string");
-  EXPECT_EQ(6, str.size());
-  EXPECT_STREQ("string", str.str().c_str());
+TEST(vector, assign) {
+  vector<int> vec;
+  vec.assign(6, 10);
+  EXPECT_EQ(6, vec.size());
+  for (auto& v : vec) {
+    EXPECT_EQ(10, v);
+  }
 
-  str.assign("another string");
-  EXPECT_EQ(14, str.size());
-  EXPECT_STREQ("another string", str.str().c_str());
+  vec.assign({1,3,5,7,9});
+  EXPECT_EQ(5, vec.size());
+  for (size_t i = 0; i < vec.size(); ++i) {
+    EXPECT_EQ(i * 2 + 1, vec[i]);
+  }
 }
 
-TEST(string, serialize) {
-  string str("string");
-  void* buffer = std::malloc(bufferSize(str));
+TEST(vector, serialize) {
+  vector<int> vec(6, 100);
+  void* buffer = std::malloc(bufferSize(vec));
   {
-    string to;
-    serialize(str, to, buffer);
+    vector<int> to;
+    serialize(vec, to, buffer);
     EXPECT_EQ(6, to.size());
-    EXPECT_STREQ("string", to.str().c_str());
+    for (auto& v : vec) {
+      EXPECT_EQ(100, v);
+    }
   }
   std::free(buffer);
 }
