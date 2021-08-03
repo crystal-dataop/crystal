@@ -240,6 +240,10 @@ class string {
     }
   }
 
+  bool withBufferMask() const noexcept {
+    return offset_ && getMask(offset_);
+  }
+
   friend void serialize(const string& from, string& to, void* buffer);
 
   static const size_t npos = -1;

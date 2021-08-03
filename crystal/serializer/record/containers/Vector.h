@@ -210,6 +210,10 @@ class vector {
     }
   }
 
+  bool withBufferMask() const noexcept {
+    return offset_ && getMask(offset_);
+  }
+
   friend void serialize<>(const vector<T>& from, vector<T>& to, void* buffer);
 
  private:

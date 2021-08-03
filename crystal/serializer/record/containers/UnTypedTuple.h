@@ -209,6 +209,7 @@ class untyped_tuple {
     return meta_->fixed_size();
   }
   size_t element_buffer_size(size_t i) const noexcept;
+  size_t element_buffer_size_to_update(size_t i) const noexcept;
 
   template <class F>
   void write(size_t size, F f) {

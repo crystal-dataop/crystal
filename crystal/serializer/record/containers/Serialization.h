@@ -86,15 +86,17 @@ inline void serialize(const string& from, string& to, void* buffer) {
 template <class T1, class T2>
 inline
 void serialize(const pair<T1, T2>& from, pair<T1, T2>& to, void* buffer) {
-  serialize(from.first, to.first, buffer);
-  serialize(from.second, to.second, buffer + bufferSize(from.first));
+  uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
+  serialize(from.first, to.first, p);
+  serialize(from.second, to.second, p + bufferSize(from.first));
 }
 
 template <class T, size_t N>
 void serialize(const array<T, N>& from, array<T, N>& to, void* buffer) {
+  uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
   for (size_t i = 0; i < N; ++i) {
-    serialize(from[i], to[i], buffer);
-    buffer += bufferSize(from[i]);
+    serialize(from[i], to[i], p);
+    p += bufferSize(from[i]);
   }
 }
 
