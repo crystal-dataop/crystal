@@ -24,26 +24,19 @@ namespace crystal {
 template <class T>
 constexpr size_t kNoMaskBitCount = sizeof(T) * 8 - 1;
 
-template <class T>
-inline T mask(T bits) {
-  return bits >> kNoMaskBitCount<T>;
-}
-
-template <class T>
-inline void maskValue(T& bits) {
-  bits |= (1 << kNoMaskBitCount<T>);
-}
-
-template <class T>
-inline T unmaskValue(T bits) {
-  return bits & ~(1 << kNoMaskBitCount<T>);
-}
-
 struct Head {
   uint8_t mask : 1;
   uint8_t nvar : 3;
   size_t _size : 4;
 };
+
+inline bool getMask(uint8_t* p) {
+  return reinterpret_cast<Head*>(p)->mask;
+}
+
+inline size_t getBytes(uint8_t* p) {
+  return reinterpret_cast<Head*>(p)->nvar + 1;
+}
 
 inline size_t getSize(uint8_t* p) {
   Head* h = reinterpret_cast<Head*>(p);
@@ -54,6 +47,29 @@ inline size_t getSize(uint8_t* p) {
     case 7: return *reinterpret_cast<uint64_t*>(p) & 0xfffffffffffffff;
   }
   return 0;
+}
+
+inline size_t calcBytes(size_t n) {
+  if (n <= 0xf) return 1;
+  if (n <= 0xfff) return 2;
+  if (n <= 0xfffffff) return 4;
+  if (n <= 0xfffffffffffffff) return 8;
+  return 0;
+}
+
+inline void setMask(uint8_t* p) {
+  reinterpret_cast<Head*>(p)->mask = 1;
+}
+
+inline void setSize(uint8_t* p, size_t n) {
+  Head* h = reinterpret_cast<Head*>(p);
+  switch (calcBytes(n)) {
+    case 0: break;
+    case 1: *p = n; h->nvar = 0; break;
+    case 2: *reinterpret_cast<uint16_t*>(p) = n; h->nvar = 1; break;
+    case 4: *reinterpret_cast<uint32_t*>(p) = n; h->nvar = 3; break;
+    case 8: *reinterpret_cast<uint64_t*>(p) = n; h->nvar = 7; break;
+  }
 }
 
 } // namespace crystal

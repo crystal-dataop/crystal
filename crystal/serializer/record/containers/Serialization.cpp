@@ -45,13 +45,18 @@ void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {
   uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
   size_t n = from.fixed_size();
   std::memcpy(buf, old, n);
-  maskValue(*buf);
+  setMask(buf);
   uint8_t* p = buf;
   p += n;
   for (size_t i = 0; i < from.size(); ++i) {
-    switch ((*from.meta_)[i].type) {
-#define CASE(dt, t) \
-      case DataType::dt: serialize(from.get<t>(i), to.get<t>(i), p); break;
+    auto& em = (*from.meta_)[i];
+    switch (em.type) {
+#define CASE(dt, t)                                       \
+      case DataType::dt:                                  \
+        serialize(*reinterpret_cast<t*>(old + em.offset), \
+                  *reinterpret_cast<t*>(buf + em.offset), \
+                  p);                                     \
+        break;
 
       CASE(BOOL, bool)
       CASE(INT8, int8_t)
@@ -72,8 +77,8 @@ void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {
     }
     p += from.element_buffer_size(i);
   }
-  to.offset_ = buf;
   to.meta_ = from.meta_;
+  to.offset_ = buf;
 }
 
 } // namespace crystal

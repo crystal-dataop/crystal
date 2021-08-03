@@ -38,7 +38,7 @@ TEST(vector, assign) {
 
 TEST(vector, serialize) {
   vector<int> vec(6, 100);
-  EXPECT_EQ(28, bufferSize(vec));
+  EXPECT_EQ(25, bufferSize(vec));
   void* buffer = std::malloc(bufferSize(vec));
   {
     vector<int> to;
@@ -53,13 +53,13 @@ TEST(vector, serialize) {
 
 TEST(vector, string) {
   vector<string> vec;
-  vec.assign(6, string("string"));
+  vec.assign(6, "string");
   EXPECT_EQ(6, vec.size());
   for (auto& v : vec) {
     EXPECT_STREQ("string", v.str().c_str());
   }
 
-  EXPECT_EQ(112, bufferSize(vec));
+  EXPECT_EQ(91, bufferSize(vec));
   void* buffer = std::malloc(bufferSize(vec));
   {
     vector<string> to;

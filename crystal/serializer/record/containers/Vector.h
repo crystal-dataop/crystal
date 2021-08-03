@@ -44,9 +44,9 @@ class vector {
 
   ~vector() {
     if (offset_) {
-      uint32_t* old = offset_.get();
+      uint8_t* old = offset_.get();
       offset_ = nullptr;
-      if (!mask(*old)) {
+      if (!getMask(old)) {
         std::free(old);
       }
     }
@@ -133,10 +133,10 @@ class vector {
   }
 
   reference operator[](size_t pos) {
-    return reinterpret_cast<T*>(offset_ + 1)[pos];
+    return reinterpret_cast<T*>(offset_ + getBytes(offset_))[pos];
   }
   const_reference operator[](size_t pos) const {
-    return reinterpret_cast<T*>(offset_ + 1)[pos];
+    return reinterpret_cast<const T*>(offset_ + getBytes(offset_))[pos];
   }
 
   T& front() {
@@ -154,10 +154,12 @@ class vector {
   }
 
   T* data() noexcept {
-    return offset_ ? reinterpret_cast<T*>(offset_ + 1) : nullptr;
+    return offset_ ? reinterpret_cast<T*>(offset_ + getBytes(offset_))
+                   : nullptr;
   }
   const T* data() const noexcept {
-    return offset_ ? reinterpret_cast<const T*>(offset_ + 1) : nullptr;
+    return offset_ ? reinterpret_cast<const T*>(offset_ + getBytes(offset_))
+                   : nullptr;
   }
 
   iterator begin() noexcept {
@@ -179,28 +181,28 @@ class vector {
   }
 
   size_t size() const noexcept {
-    return offset_ ? unmaskValue(*offset_) : 0;
+    return offset_ ? getSize(offset_) : 0;
   }
 
   size_t fixed_size() const noexcept {
-    return offset_ ? unmaskValue(*offset_) * sizeof(T) + sizeof(uint32_t) : 0;
+    return offset_ ? getSize(offset_) * sizeof(T) + getBytes(offset_) : 0;
   }
 
   template <class F>
   void write(size_t n, F f) {
-    if (n >> kNoMaskBitCount<uint32_t> > 0) {
+    size_t bytes = calcBytes(n);
+    if (bytes == 0) {
       throw std::overflow_error("vector::write");
     }
-    uint32_t* p = reinterpret_cast<uint32_t*>(
-        std::malloc(n * sizeof(T) + sizeof(uint32_t)));
-    *p = n;
+    uint8_t* p = reinterpret_cast<uint8_t*>(std::malloc(n * sizeof(T) + bytes));
+    setSize(p, n);
     if (n > 0) {
-      f(reinterpret_cast<T*>(p + 1), n);
+      f(reinterpret_cast<T*>(p + bytes), n);
     }
     if (offset_) {
-      uint32_t* old = offset_.get();
+      uint8_t* old = offset_.get();
       offset_ = p;
-      if (!mask(*old)) {
+      if (!getMask(old)) {
         std::free(old);
       }
     } else {
@@ -211,7 +213,7 @@ class vector {
   friend void serialize<>(const vector<T>& from, vector<T>& to, void* buffer);
 
  private:
-  OffsetPtr<uint32_t> offset_;
+  OffsetPtr<uint8_t> offset_;
 };
 
 } // namespace crystal

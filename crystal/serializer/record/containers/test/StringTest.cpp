@@ -34,6 +34,7 @@ TEST(string, assign) {
 
 TEST(string, serialize) {
   string str("string");
+  EXPECT_EQ(7, bufferSize(str));
   void* buffer = std::malloc(bufferSize(str));
   {
     string to;

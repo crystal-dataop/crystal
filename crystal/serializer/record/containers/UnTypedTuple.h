@@ -66,7 +66,7 @@ class untyped_tuple {
       }
       head* p = reinterpret_cast<head*>(
           std::malloc(n * sizeof(element) + sizeof(head)));
-      *reinterpret_cast<uint64_t*>(p) = 1;
+      p->size = 1;
       if (offset_) {
         head* old = offset_.get();
         offset_ = p;
@@ -143,7 +143,7 @@ class untyped_tuple {
     if (offset_) {
       uint8_t* old = offset_.get();
       offset_ = nullptr;
-      if (!mask(*old)) {
+      if (!getMask(old)) {
         std::free(old);
       }
     }
@@ -217,7 +217,7 @@ class untyped_tuple {
     if (offset_) {
       uint8_t* old = offset_.get();
       offset_ = p;
-      if (!mask(*old)) {
+      if (!getMask(old)) {
         std::free(old);
       }
     } else {

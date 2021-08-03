@@ -41,9 +41,9 @@ class string {
 
   ~string() {
     if (offset_) {
-      uint32_t* old = offset_.get();
+      uint8_t* old = offset_.get();
       offset_ = nullptr;
-      if (!mask(*old)) {
+      if (!getMask(old)) {
         std::free(old);
       }
     }
@@ -155,10 +155,10 @@ class string {
   }
 
   reference operator[](size_t pos) {
-    return reinterpret_cast<char*>(offset_ + 1)[pos];
+    return reinterpret_cast<char*>(offset_ + getBytes(offset_))[pos];
   }
   const_reference operator[](size_t pos) const {
-    return reinterpret_cast<char*>(offset_ + 1)[pos];
+    return reinterpret_cast<const char*>(offset_ + getBytes(offset_))[pos];
   }
 
   char& front() {
@@ -176,10 +176,12 @@ class string {
   }
 
   char* data() noexcept {
-    return offset_ ? reinterpret_cast<char*>(offset_ + 1) : nullptr;
+    return offset_ ? reinterpret_cast<char*>(offset_ + getBytes(offset_))
+                   : nullptr;
   }
   const char* data() const noexcept {
-    return offset_ ? reinterpret_cast<const char*>(offset_ + 1) : nullptr;
+    return offset_ ? reinterpret_cast<const char*>(offset_ + getBytes(offset_))
+                   : nullptr;
   }
 
   std::string str() const {
@@ -210,7 +212,7 @@ class string {
   }
 
   size_t size() const noexcept {
-    return offset_ ? unmaskValue(*offset_) : 0;
+    return offset_ ? getSize(offset_) : 0;
   }
   size_t length() const noexcept {
     return size();
@@ -218,19 +220,19 @@ class string {
 
   template <class F>
   void write(size_t n, F f) {
-    if (n >> kNoMaskBitCount<uint32_t> > 0) {
+    size_t bytes = calcBytes(n);
+    if (bytes == 0) {
       throw std::overflow_error("string::write");
     }
-    uint32_t* p = reinterpret_cast<uint32_t*>(
-        std::malloc(n + sizeof(uint32_t)));
-    *p = n;
+    uint8_t* p = reinterpret_cast<uint8_t*>(std::malloc(n + bytes));
+    setSize(p, n);
     if (n > 0) {
-      f(reinterpret_cast<char*>(p + 1), n);
+      f(reinterpret_cast<char*>(p + bytes), n);
     }
     if (offset_) {
-      uint32_t* old = offset_.get();
+      uint8_t* old = offset_.get();
       offset_ = p;
-      if (!mask(*old)) {
+      if (!getMask(old)) {
         std::free(old);
       }
     } else {
@@ -243,7 +245,7 @@ class string {
   static const size_t npos = -1;
 
  private:
-  OffsetPtr<uint32_t> offset_;
+  OffsetPtr<uint8_t> offset_;
 };
 
 } // namespace crystal

@@ -38,7 +38,8 @@ inline size_t bufferSize(const T&) {
 }
 
 inline size_t bufferSize(const string& value) {
-  return value.size() + sizeof(uint32_t);
+  size_t n = value.size();
+  return n + calcBytes(n);
 }
 
 template <class T1, class T2>
@@ -75,10 +76,10 @@ inline void serialize(const T&, T&, void*) {
 }
 
 inline void serialize(const string& from, string& to, void* buffer) {
-  uint32_t* old = from.offset_.get();
-  uint32_t* buf = reinterpret_cast<uint32_t*>(buffer);
+  uint8_t* old = from.offset_.get();
+  uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
   std::memcpy(buf, old, bufferSize(from));
-  maskValue(*buf);
+  setMask(buf);
   to.offset_ = buf;
 }
 
@@ -99,18 +100,20 @@ void serialize(const array<T, N>& from, array<T, N>& to, void* buffer) {
 
 template <class T>
 void serialize(const vector<T>& from, vector<T>& to, void* buffer) {
-  uint32_t* old = from.offset_.get();
-  uint32_t* buf = reinterpret_cast<uint32_t*>(buffer);
+  uint8_t* old = from.offset_.get();
+  uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
   size_t n = from.fixed_size();
   std::memcpy(buf, old, n);
-  maskValue(*buf);
-  uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
+  setMask(buf);
+  uint8_t* p = buf;
   p += n;
-  for (size_t i = 0; i < from.size(); ++i) {
-    serialize(reinterpret_cast<T*>(old + 1)[i],
-              reinterpret_cast<T*>(buf + 1)[i],
+  size_t size = from.size();
+  size_t bytes = calcBytes(size);
+  for (size_t i = 0; i < size; ++i) {
+    serialize(reinterpret_cast<T*>(old + bytes)[i],
+              reinterpret_cast<T*>(buf + bytes)[i],
               p);
-    p += bufferSize(reinterpret_cast<T*>(old + 1)[i]);
+    p += bufferSize(reinterpret_cast<T*>(old + bytes)[i]);
   }
   to.offset_ = buf;
 }
