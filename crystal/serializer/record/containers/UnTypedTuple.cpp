@@ -15,6 +15,7 @@
  */
 
 #include "crystal/serializer/record/containers/Serialization.h"
+#include "crystal/serializer/record/containers/SerializationInUpdating.h"
 #include "crystal/serializer/record/containers/String.h"
 #include "crystal/serializer/record/containers/UnTypedTuple.h"
 
@@ -254,7 +255,7 @@ size_t untyped_tuple::element_buffer_size_to_update(size_t i) const noexcept {
     uint8_t* e = offset_ + em.offset;
     switch (em.type) {
 #define CASE(dt, t) \
-      case DataType::dt: return bsize<t>(e, em);
+      case DataType::dt: return bsize<t>(e, em, true);
 
       CASE(BOOL, bool)
       CASE(INT8, int8_t)

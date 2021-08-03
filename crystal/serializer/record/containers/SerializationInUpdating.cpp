@@ -53,8 +53,8 @@ void serializeInUpdating(untyped_tuple& value, void* buffer) {
       switch (em.type) {
 #define CASE(dt, t)                                         \
         case DataType::dt: {                                \
-          T& from = *reinterpret_cast<t*>(old + em.offset); \
-          T& to = *reinterpret_cast<t*>(buf + em.offset);   \
+          t& from = *reinterpret_cast<t*>(old + em.offset); \
+          t& to = *reinterpret_cast<t*>(buf + em.offset);   \
           syncOffset(from, to);                             \
           serializeInUpdating(to, p);                       \
           break;                                            \
@@ -88,7 +88,7 @@ void serializeInUpdating(untyped_tuple& value, void* buffer) {
       switch (em.type) {
 #define CASE(dt, t)                                         \
         case DataType::dt: {                                \
-          T& from = *reinterpret_cast<t*>(old + em.offset); \
+          t& from = *reinterpret_cast<t*>(old + em.offset); \
           serializeInUpdating(from, p);                     \
           break;                                            \
         }

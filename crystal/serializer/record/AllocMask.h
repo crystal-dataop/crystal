@@ -24,6 +24,8 @@ namespace crystal {
 template <class T>
 constexpr size_t kNoMaskBitCount = sizeof(T) * 8 - 1;
 
+// Little-Endian
+
 struct Head {
   uint8_t mask : 1;
   uint8_t nvar : 3;
@@ -41,10 +43,10 @@ inline size_t getBytes(uint8_t* p) {
 inline size_t getSize(uint8_t* p) {
   Head* h = reinterpret_cast<Head*>(p);
   switch (h->nvar) {
-    case 0: return *p & 0xf;
-    case 1: return *reinterpret_cast<uint16_t*>(p) & 0xfff;
-    case 3: return *reinterpret_cast<uint32_t*>(p) & 0xfffffff;
-    case 7: return *reinterpret_cast<uint64_t*>(p) & 0xfffffffffffffff;
+    case 0: return *p >> 4 & 0xf;
+    case 1: return *reinterpret_cast<uint16_t*>(p) >> 4 & 0xfff;
+    case 3: return *reinterpret_cast<uint32_t*>(p) >> 4 & 0xfffffff;
+    case 7: return *reinterpret_cast<uint64_t*>(p) >> 4 & 0xfffffffffffffff;
   }
   return 0;
 }
@@ -65,10 +67,10 @@ inline void setSize(uint8_t* p, size_t n) {
   Head* h = reinterpret_cast<Head*>(p);
   switch (calcBytes(n)) {
     case 0: break;
-    case 1: *p = n; h->nvar = 0; break;
-    case 2: *reinterpret_cast<uint16_t*>(p) = n; h->nvar = 1; break;
-    case 4: *reinterpret_cast<uint32_t*>(p) = n; h->nvar = 3; break;
-    case 8: *reinterpret_cast<uint64_t*>(p) = n; h->nvar = 7; break;
+    case 1: *p = n << 4; h->nvar = 0; break;
+    case 2: *reinterpret_cast<uint16_t*>(p) = n << 4; h->nvar = 1; break;
+    case 4: *reinterpret_cast<uint32_t*>(p) = n << 4; h->nvar = 3; break;
+    case 8: *reinterpret_cast<uint64_t*>(p) = n << 4; h->nvar = 7; break;
   }
 }
 

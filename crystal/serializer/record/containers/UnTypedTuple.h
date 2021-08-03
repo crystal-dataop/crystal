@@ -108,9 +108,14 @@ class untyped_tuple {
       add_type<T>(submeta, count);
     }
 
+    bool withBufferMask() const noexcept {
+      return offset_ && offset_->mask;
+    }
+
     friend void serialize(const untyped_tuple::meta& from,
                           untyped_tuple::meta& to,
                           uint8_t* buffer);
+    friend void serializeInUpdating(untyped_tuple::meta& value, void* buffer);
 
    private:
     template <class T>
@@ -226,8 +231,14 @@ class untyped_tuple {
     }
   }
 
+  bool withBufferMask() const noexcept {
+    return offset_ && getMask(offset_);
+  }
+
+  friend void syncOffset(const untyped_tuple& from, untyped_tuple& to);
   friend void serialize(
       const untyped_tuple& from, untyped_tuple& to, void* buffer);
+  friend void serializeInUpdating(untyped_tuple& value, void* buffer);
 
  private:
   OffsetPtr<uint8_t> offset_;

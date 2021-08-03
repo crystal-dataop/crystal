@@ -121,7 +121,7 @@ void serializeInUpdating(array<T, N>& value, void* buffer) {
 }
 
 template <class T>
-void syncOffset(const vector<T>& from, vector<T>& to) {
+inline void syncOffset(const vector<T>& from, vector<T>& to) {
   to.offset_ = from.offset_;
 }
 template <class T>
@@ -134,7 +134,7 @@ void serializeInUpdating(vector<T>& value, void* buffer) {
     setMask(buf);
     uint8_t* p = buf;
     p += n;
-    size_t size = from.size();
+    size_t size = value.size();
     size_t bytes = calcBytes(size);
     for (size_t i = 0; i < size; ++i) {
       T& from = reinterpret_cast<T*>(old + bytes)[i];
@@ -147,6 +147,8 @@ void serializeInUpdating(vector<T>& value, void* buffer) {
   } else {
     uint8_t* old = value.offset_.get();
     uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
+    size_t size = value.size();
+    size_t bytes = calcBytes(size);
     for (size_t i = 0; i < size; ++i) {
       T& from = reinterpret_cast<T*>(old + bytes)[i];
       serializeInUpdating(from, p);
@@ -155,6 +157,9 @@ void serializeInUpdating(vector<T>& value, void* buffer) {
   }
 }
 
+inline void syncOffset(const untyped_tuple& from, untyped_tuple& to) {
+  to.offset_ = from.offset_;
+}
 void serializeInUpdating(untyped_tuple::meta& value, void* buffer);
 void serializeInUpdating(untyped_tuple& value, void* buffer);
 

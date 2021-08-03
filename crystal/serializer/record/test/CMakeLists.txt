@@ -2,6 +2,7 @@
 
 test_sources(
   AccessorTest.cpp
+  AllocMaskTest.cpp
   ArrayTest.cpp
   BitsetTest.cpp
   FieldBlockTest.cpp
