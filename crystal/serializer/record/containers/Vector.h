@@ -99,9 +99,9 @@ class vector {
       }
     });
   }
-  /*
-  template <class InputIt>
-  void assign(InputIt first, InputIt last) {
+  template <class It, class Category = typename
+            std::iterator_traits<It>::iterator_category>
+  void assign(It first, It last) {
     size_t n = last - first;
     write(n, [&](T* p, size_t) {
       for (T* it = p; first != last; ) {
@@ -109,7 +109,6 @@ class vector {
       }
     });
   }
-  */
   void assign(std::initializer_list<T> list) {
     size_t n = list.size();
     write(n, [&](T* p, size_t) {

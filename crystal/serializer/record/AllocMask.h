@@ -17,6 +17,7 @@
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 
 namespace crystal {
 
@@ -36,6 +37,23 @@ inline void maskValue(T& bits) {
 template <class T>
 inline T unmaskValue(T bits) {
   return bits & ~(1 << kNoMaskBitCount<T>);
+}
+
+struct Head {
+  uint8_t mask : 1;
+  uint8_t nvar : 3;
+  size_t _size : 4;
+};
+
+inline size_t getSize(uint8_t* p) {
+  Head* h = reinterpret_cast<Head*>(p);
+  switch (h->nvar) {
+    case 0: return *p & 0xf;
+    case 1: return *reinterpret_cast<uint16_t*>(p) & 0xfff;
+    case 3: return *reinterpret_cast<uint32_t*>(p) & 0xfffffff;
+    case 7: return *reinterpret_cast<uint64_t*>(p) & 0xfffffffffffffff;
+  }
+  return 0;
 }
 
 } // namespace crystal

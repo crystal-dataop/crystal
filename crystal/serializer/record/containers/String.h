@@ -64,8 +64,8 @@ class string {
   string(const char* s) {
     assign(s);
   }
-  template <class InputIt>
-  string(InputIt first, InputIt last) {
+  template <class It>
+  string(It first, It last) {
     assign(first, last);
   }
   string(const string& other) {

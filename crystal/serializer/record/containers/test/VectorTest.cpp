@@ -38,6 +38,7 @@ TEST(vector, assign) {
 
 TEST(vector, serialize) {
   vector<int> vec(6, 100);
+  EXPECT_EQ(28, bufferSize(vec));
   void* buffer = std::malloc(bufferSize(vec));
   {
     vector<int> to;
@@ -45,6 +46,27 @@ TEST(vector, serialize) {
     EXPECT_EQ(6, to.size());
     for (auto& v : vec) {
       EXPECT_EQ(100, v);
+    }
+  }
+  std::free(buffer);
+}
+
+TEST(vector, string) {
+  vector<string> vec;
+  vec.assign(6, string("string"));
+  EXPECT_EQ(6, vec.size());
+  for (auto& v : vec) {
+    EXPECT_STREQ("string", v.str().c_str());
+  }
+
+  EXPECT_EQ(112, bufferSize(vec));
+  void* buffer = std::malloc(bufferSize(vec));
+  {
+    vector<string> to;
+    serialize(vec, to, buffer);
+    EXPECT_EQ(6, to.size());
+    for (auto& v : vec) {
+      EXPECT_STREQ("string", v.str().c_str());
     }
   }
   std::free(buffer);
