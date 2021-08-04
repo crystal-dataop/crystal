@@ -40,13 +40,7 @@ class string {
   string() noexcept = default;
 
   ~string() {
-    if (offset_) {
-      uint8_t* old = offset_.get();
-      offset_ = nullptr;
-      if (!getMask(old)) {
-        std::free(old);
-      }
-    }
+    setBuffer(nullptr);
   }
 
   string(size_t n, char c) {
@@ -229,6 +223,11 @@ class string {
     if (n > 0) {
       f(reinterpret_cast<char*>(p + bytes), n);
     }
+    setBuffer(p);
+  }
+
+  void setBuffer(void* buffer) {
+    uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
     if (offset_) {
       uint8_t* old = offset_.get();
       offset_ = p;

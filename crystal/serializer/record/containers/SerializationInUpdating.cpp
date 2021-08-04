@@ -79,7 +79,7 @@ void serializeInUpdating(untyped_tuple& value, void* buffer) {
       }
       p += value.element_buffer_size_to_update(i);
     }
-    value.offset_ = buf;
+    value.setBuffer(buf);
   } else {
     uint8_t* old = value.offset_.get();
     uint8_t* p = reinterpret_cast<uint8_t*>(buffer);

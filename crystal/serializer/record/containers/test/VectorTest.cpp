@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "crystal/serializer/record/containers/Serialization.h"
+#include "crystal/serializer/record/containers/SerializationInUpdating.h"
 #include "crystal/serializer/record/containers/Vector.h"
 
 using namespace crystal;
@@ -48,6 +49,16 @@ TEST(vector, serialize) {
       EXPECT_EQ(100, v);
     }
   }
+  {
+    vector<int> to = vec;
+    EXPECT_EQ(25, bufferSizeToUpdate(to));
+    serializeInUpdating(to, buffer);
+    EXPECT_EQ(0, bufferSizeToUpdate(to));
+    EXPECT_EQ(6, to.size());
+    for (auto& v : vec) {
+      EXPECT_EQ(100, v);
+    }
+  }
   std::free(buffer);
 }
 
@@ -64,6 +75,19 @@ TEST(vector, string) {
   {
     vector<string> to;
     serialize(vec, to, buffer);
+    EXPECT_EQ(6, to.size());
+    for (auto& v : vec) {
+      EXPECT_STREQ("string", v.str().c_str());
+    }
+  }
+  {
+    uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
+    vector<string> to = vec;
+    EXPECT_EQ(91, bufferSizeToUpdate(to));
+    serializeInUpdating(to[0], p);
+    EXPECT_EQ(84, bufferSizeToUpdate(to));
+    serializeInUpdating(to, p + 7);
+    EXPECT_EQ(0, bufferSizeToUpdate(to));
     EXPECT_EQ(6, to.size());
     for (auto& v : vec) {
       EXPECT_STREQ("string", v.str().c_str());

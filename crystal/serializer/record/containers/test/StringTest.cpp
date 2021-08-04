@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "crystal/serializer/record/containers/Serialization.h"
+#include "crystal/serializer/record/containers/SerializationInUpdating.h"
 #include "crystal/serializer/record/containers/String.h"
 
 using namespace crystal;
@@ -41,6 +42,15 @@ TEST(string, serialize) {
     serialize(str, to, buffer);
     EXPECT_EQ(6, to.size());
     EXPECT_STREQ("string", to.str().c_str());
+    EXPECT_EQ(0, bufferSizeToUpdate(to));
+  }
+  {
+    string to = str;
+    EXPECT_EQ(7, bufferSizeToUpdate(to));
+    serializeInUpdating(to, buffer);
+    EXPECT_EQ(6, to.size());
+    EXPECT_STREQ("string", to.str().c_str());
+    EXPECT_EQ(0, bufferSizeToUpdate(to));
   }
   std::free(buffer);
 }

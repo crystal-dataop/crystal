@@ -47,13 +47,7 @@ class vector {
   vector() noexcept = default;
 
   ~vector() {
-    if (offset_) {
-      uint8_t* old = offset_.get();
-      offset_ = nullptr;
-      if (!getMask(old)) {
-        std::free(old);
-      }
-    }
+    setBuffer(nullptr);
   }
 
   vector(size_t n, const T& value) {
@@ -203,6 +197,11 @@ class vector {
     if (n > 0) {
       f(reinterpret_cast<T*>(p + bytes), n);
     }
+    setBuffer(p);
+  }
+
+  void setBuffer(void* buffer) {
+    uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
     if (offset_) {
       uint8_t* old = offset_.get();
       offset_ = p;

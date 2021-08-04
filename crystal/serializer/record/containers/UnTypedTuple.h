@@ -145,20 +145,14 @@ class untyped_tuple {
   untyped_tuple() noexcept = delete;
 
   ~untyped_tuple() {
-    if (offset_) {
-      uint8_t* old = offset_.get();
-      offset_ = nullptr;
-      if (!getMask(old)) {
-        std::free(old);
-      }
-    }
+    setBuffer(nullptr);
   }
 
   explicit untyped_tuple(const meta* meta) : meta_(meta) {
     reset();
   }
   untyped_tuple(const meta* meta, void* buffer) : meta_(meta) {
-    assign(buffer);
+    setBuffer(buffer);
   }
   untyped_tuple(const untyped_tuple& other) {
     assign(other);
@@ -178,9 +172,6 @@ class untyped_tuple {
 
   void reset();
 
-  void assign(void* buffer) {
-    offset_ = reinterpret_cast<uint8_t*>(buffer);
-  }
   void assign(const untyped_tuple& other);
 
   template <class T>
@@ -220,6 +211,11 @@ class untyped_tuple {
   void write(size_t size, F f) {
     uint8_t* p = reinterpret_cast<uint8_t*>(std::malloc(size + 1));
     f(p);
+    setBuffer(p);
+  }
+
+  void setBuffer(void* buffer) {
+    uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
     if (offset_) {
       uint8_t* old = offset_.get();
       offset_ = p;
