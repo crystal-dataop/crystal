@@ -108,4 +108,23 @@ class array {
   T elements_[N];
 };
 
+template <class Array>
+struct is_array : std::false_type {};
+
+template <class T, size_t N>
+struct is_array<array<T, N>> : std::true_type {};
+
+template <class T>
+inline constexpr auto is_array_v = is_array<T>::value;
+
+template <class T>
+struct array_size;
+
+template <class T, size_t N>
+struct array_size<array<T, N>>
+    : public std::integral_constant<size_t, N> {};
+
+template <class T>
+inline constexpr size_t array_size_v = array_size<std::decay_t<T>>::value;
+
 } // namespace crystal

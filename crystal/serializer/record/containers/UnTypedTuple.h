@@ -44,7 +44,7 @@ class untyped_tuple {
       DataType type;
       uint32_t count;
       uint32_t offset;
-      OffsetPtr<meta> submeta;
+      meta submeta;
     };
 
     ~meta() {
@@ -99,13 +99,18 @@ class untyped_tuple {
       return begin() + size();
     }
 
-    template <class T, std::enable_if_t<!is_untyped_tuple_v<T>, int> = 0>
-    void add_type(uint32_t count = 1) {
-      add_type<T>(nullptr, count);
-    }
-    template <class T, std::enable_if_t<is_untyped_tuple_v<T>, int> = 0>
-    void add_type(meta* submeta, uint32_t count = 1) {
-      add_type<T>(submeta, count);
+    template <class T>
+    void add_type(meta&& submeta, uint32_t count) {
+      if (offset_) {
+        new (&operator[](offset_->elem)) element
+            {
+              DataTypeTraits<T>::value,
+              count,
+              offset_->size,
+              std::forward<meta>(submeta)
+            };
+        offset_->size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
+      }
     }
 
     bool withBufferMask() const noexcept {
@@ -118,20 +123,6 @@ class untyped_tuple {
     friend void serializeInUpdating(untyped_tuple::meta& value, void* buffer);
 
    private:
-    template <class T>
-    void add_type(meta* submeta, uint32_t count) {
-      if (offset_) {
-        new (&operator[](offset_->elem)) element
-            {
-              DataTypeTraits<T>::value,
-              count,
-              offset_->size,
-              submeta
-            };
-        offset_->size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
-      }
-    }
-
     struct head {
       uint32_t mask : 1;
       uint32_t elem : 31;

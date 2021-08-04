@@ -95,3 +95,40 @@ TEST(vector, string) {
   }
   std::free(buffer);
 }
+
+TEST(vector, pair) {
+  vector<pair<int, string>> vec;
+  vec.assign(6, pair<int, string>(100, "string"));
+  EXPECT_EQ(6, vec.size());
+  for (auto& v : vec) {
+    EXPECT_EQ(100, v.first);
+    EXPECT_STREQ("string", v.second.str().c_str());
+  }
+
+  EXPECT_EQ(115, bufferSize(vec));
+  void* buffer = std::malloc(bufferSize(vec));
+  {
+    vector<pair<int, string>> to;
+    serialize(vec, to, buffer);
+    EXPECT_EQ(6, to.size());
+    for (auto& v : vec) {
+      EXPECT_EQ(100, v.first);
+      EXPECT_STREQ("string", v.second.str().c_str());
+    }
+  }
+  {
+    uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
+    vector<pair<int, string>> to = vec;
+    EXPECT_EQ(115, bufferSizeToUpdate(to));
+    serializeInUpdating(to[0], p);
+    EXPECT_EQ(108, bufferSizeToUpdate(to));
+    serializeInUpdating(to, p + 7);
+    EXPECT_EQ(0, bufferSizeToUpdate(to));
+    EXPECT_EQ(6, to.size());
+    for (auto& v : vec) {
+      EXPECT_EQ(100, v.first);
+      EXPECT_STREQ("string", v.second.str().c_str());
+    }
+  }
+  std::free(buffer);
+}

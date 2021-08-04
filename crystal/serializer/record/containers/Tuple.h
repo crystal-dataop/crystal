@@ -120,12 +120,24 @@ struct tuple_size;
 
 template <class... T>
 struct tuple_size<tuple<T...>>
-    : public std::integral_constant<std::size_t, sizeof...(T)> {};
+    : public std::integral_constant<size_t, sizeof...(T)> {};
 
 template <class T>
-inline constexpr std::size_t tuple_size_v = tuple_size<std::decay_t<T>>::value;
+inline constexpr size_t tuple_size_v = tuple_size<std::decay_t<T>>::value;
 
-template <class F, class Tuple, std::size_t... I>
+template <size_t I, class T>
+struct tuple_element;
+
+template <size_t I, class Head, class... Tail>
+struct tuple_element<I, tuple<Head, Tail...>>
+    : tuple_element<I - 1, tuple<Tail...>> {};
+
+template <class Head, class... Tail>
+struct tuple_element<0, tuple<Head, Tail...>> {
+  using type = Head;
+};
+
+template <class F, class Tuple, size_t... I>
 constexpr decltype(auto) apply_impl(
     std::index_sequence<I...>, F&& f, Tuple&& t) {
   return std::invoke(std::forward<F>(f), get<I>(std::forward<Tuple>(t))...);
@@ -138,7 +150,7 @@ constexpr decltype(auto) apply(F&& f, Tuple&& t) {
                     std::forward<Tuple>(t));
 }
 
-template <class F, class Tuple, std::size_t... I>
+template <class F, class Tuple, size_t... I>
 constexpr decltype(auto) apply_impl(
     std::index_sequence<I...>, F&& f, Tuple&& a, Tuple&& b) {
   return (std::invoke(std::forward<F>(f),
@@ -156,7 +168,7 @@ constexpr decltype(auto) apply(F&& f, Tuple&& a, Tuple&& b) {
       std::forward<Tuple>(b));
 }
 
-template <class Tuple, std::size_t... I>
+template <class Tuple, size_t... I>
 constexpr decltype(auto) eq(std::index_sequence<I...>, Tuple&& a, Tuple&& b) {
   return ((get<I>(std::forward<Tuple>(a)) == get<I>(std::forward<Tuple>(b))) &&
           ...);
@@ -177,7 +189,7 @@ operator!=(Tuple&& a, Tuple&& b) {
   return !(a == b);
 }
 
-template <class Tuple, std::size_t Index = 0U>
+template <class Tuple, size_t Index = 0U>
 bool lt(Tuple&& a, Tuple&& b) {
   if constexpr (Index == tuple_size_v<Tuple>) {
     return false;

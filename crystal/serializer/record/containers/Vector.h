@@ -225,4 +225,13 @@ class vector {
   OffsetPtr<uint8_t> offset_;
 };
 
+template <class Vector>
+struct is_vector : std::false_type {};
+
+template <class T>
+struct is_vector<vector<T>> : std::true_type {};
+
+template <class T>
+inline constexpr auto is_vector_v = is_vector<T>::value;
+
 } // namespace crystal
