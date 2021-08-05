@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include "crystal/serializer/record/containers/Array.h"
 #include "crystal/serializer/record/containers/String.h"
 #include "crystal/serializer/record/containers/Tuple.h"
@@ -51,14 +53,31 @@ add_element_type(untyped_tuple::meta& meta) {
   meta.add_type<T>({}, 1);
 }
 
+template <size_t I, class T>
+struct element_type_to_meta;
+
+template <size_t I, class Head, class... Tail>
+struct element_type_to_meta<I, tuple<Head, Tail...>>
+    : element_type_to_meta<I - 1, tuple<Tail...>> {
+  element_type_to_meta<I, tuple<Head, Tail...>>(untyped_tuple::meta& meta) {
+    add_element_type<Head>(meta);
+  }
+};
+
+template <class Head, class... Tail>
+struct element_type_to_meta<0, tuple<Head, Tail...>> {
+  element_type_to_meta<0, tuple<Head, Tail...>>(untyped_tuple::meta& meta) {
+    add_element_type<Head>(meta);
+  }
+};
+
+
 template <class T>
 std::enable_if_t<is_tuple_v<T>, untyped_tuple::meta>
 generate_tuple_meta() {
   untyped_tuple::meta meta;
-  meta.resize(tuple_size_v<Tuple>);
-  for (size_t i = 0; i < tuple_size_v<Tuple>; ++i) {
-    add_element_type<tuple_element<i, Tuple>::type>(meta);
-  }
+  meta.resize(tuple_size_v<T>);
+  element_type_to_meta<tuple_size_v<T> - 1, T> to(meta);
   return meta;
 }
 
