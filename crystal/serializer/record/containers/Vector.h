@@ -47,7 +47,7 @@ class vector {
   vector() noexcept = default;
 
   ~vector() {
-    setBuffer(nullptr);
+    set_buffer(nullptr);
   }
 
   vector(size_t n, const T& value) {
@@ -197,14 +197,20 @@ class vector {
     if (n > 0) {
       f(reinterpret_cast<T*>(p + bytes), n);
     }
-    setBuffer(p);
+    set_buffer(p);
   }
 
-  void setBuffer(void* buffer) {
+  void set_buffer(void* buffer) {
     uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
     if (offset_) {
       uint8_t* old = offset_.get();
+      auto b = begin();
+      auto e = end();
       offset_ = p;
+      while (b != e) {
+        b->~T();
+        ++b;
+      }
       if (!getMask(old)) {
         std::free(old);
       }
@@ -213,7 +219,7 @@ class vector {
     }
   }
 
-  bool withBufferMask() const noexcept {
+  bool with_buffer_mask() const noexcept {
     return offset_ && getMask(offset_);
   }
 

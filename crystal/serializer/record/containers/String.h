@@ -40,7 +40,7 @@ class string {
   string() noexcept = default;
 
   ~string() {
-    setBuffer(nullptr);
+    set_buffer(nullptr);
   }
 
   string(size_t n, char c) {
@@ -223,10 +223,10 @@ class string {
     if (n > 0) {
       f(reinterpret_cast<char*>(p + bytes), n);
     }
-    setBuffer(p);
+    set_buffer(p);
   }
 
-  void setBuffer(void* buffer) {
+  void set_buffer(void* buffer) {
     uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
     if (offset_) {
       uint8_t* old = offset_.get();
@@ -239,7 +239,7 @@ class string {
     }
   }
 
-  bool withBufferMask() const noexcept {
+  bool with_buffer_mask() const noexcept {
     return offset_ && getMask(offset_);
   }
 

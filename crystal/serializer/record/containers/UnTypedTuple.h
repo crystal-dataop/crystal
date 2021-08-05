@@ -21,7 +21,6 @@
 
 #include "crystal/serializer/record/AllocMask.h"
 #include "crystal/serializer/record/OffsetPtr.h"
-#include "crystal/serializer/record/containers/Vector.h"
 #include "crystal/type/DataType.h"
 
 namespace crystal {
@@ -39,22 +38,34 @@ inline constexpr auto is_untyped_tuple_v = is_untyped_tuple<T>::value;
 
 class untyped_tuple {
  public:
-  struct meta {
+  class meta {
+   public:
+    struct head {
+      uint32_t mask : 1;
+      uint32_t elem : 31;
+      uint32_t size;
+    };
     struct element {
       DataType type;
       uint32_t count;
       uint32_t offset;
-      meta submeta;
+      OffsetPtr<head> submeta;
     };
 
+   private:
+    OffsetPtr<head> offset_;
+
+   public:
+    meta(const OffsetPtr<head>& offset) noexcept : offset_(offset) {}
+
     ~meta() {
-      if (offset_) {
-        head* old = offset_.get();
-        offset_ = nullptr;
-        if (!old->mask) {
-          std::free(old);
-        }
-      }
+      set_buffer(nullptr);
+    }
+
+    OffsetPtr<head> release() noexcept {
+      auto offset = offset_;
+      offset_ = nullptr;
+      return offset;
     }
 
     void resize(size_t n) {
@@ -62,20 +73,12 @@ class untyped_tuple {
         return;
       }
       if (n >> kNoMaskBitCount<uint32_t> > 0) {
-        throw std::overflow_error("untyped_tuple::meta::resize");
+        throw std::overflow_error("meta::resize");
       }
       head* p = reinterpret_cast<head*>(
           std::malloc(n * sizeof(element) + sizeof(head)));
       p->size = 1;
-      if (offset_) {
-        head* old = offset_.get();
-        offset_ = p;
-        if (!old->mask) {
-          std::free(old);
-        }
-      } else {
-        offset_ = p;
-      }
+      set_buffer(p);
     }
 
     size_t size() const noexcept {
@@ -107,9 +110,27 @@ class untyped_tuple {
               DataTypeTraits<T>::value,
               count,
               offset_->size,
-              std::forward<meta>(submeta)
+              submeta.release()
             };
         offset_->size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
+      }
+    }
+
+    void set_buffer(void* buffer) {
+      if (offset_) {
+        head* old = offset_.get();
+        auto b = begin();
+        auto e = end();
+        offset_ = p;
+        while (b != e) {
+          meta(b->submeta).~meta();
+          ++b;
+        }
+        if (!old->mask) {
+          std::free(old);
+        }
+      } else {
+        offset_ = p;
       }
     }
 
@@ -117,33 +138,22 @@ class untyped_tuple {
       return offset_ && offset_->mask;
     }
 
-    friend void serialize(const untyped_tuple::meta& from,
-                          untyped_tuple::meta& to,
-                          uint8_t* buffer);
-    friend void serializeInUpdating(untyped_tuple::meta& value, void* buffer);
-
-   private:
-    struct head {
-      uint32_t mask : 1;
-      uint32_t elem : 31;
-      uint32_t size;
-    };
-
-    OffsetPtr<head> offset_;
+    friend void serialize(const meta& from, meta& to, uint8_t* buffer);
+    friend void serializeInUpdating(meta& value, void* buffer);
   };
 
  public:
   untyped_tuple() noexcept = delete;
 
   ~untyped_tuple() {
-    setBuffer(nullptr);
+    set_buffer(nullptr);
   }
 
   explicit untyped_tuple(const meta* meta) : meta_(meta) {
     reset();
   }
   untyped_tuple(const meta* meta, void* buffer) : meta_(meta) {
-    setBuffer(buffer);
+    set_buffer(buffer);
   }
   untyped_tuple(const untyped_tuple& other) {
     assign(other);
@@ -202,10 +212,10 @@ class untyped_tuple {
   void write(size_t size, F f) {
     uint8_t* p = reinterpret_cast<uint8_t*>(std::malloc(size + 1));
     f(p);
-    setBuffer(p);
+    set_buffer(p);
   }
 
-  void setBuffer(void* buffer) {
+  void set_buffer(void* buffer) {
     uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
     if (offset_) {
       uint8_t* old = offset_.get();
@@ -218,13 +228,14 @@ class untyped_tuple {
     }
   }
 
-  bool withBufferMask() const noexcept {
+  bool with_buffer_mask() const noexcept {
     return offset_ && getMask(offset_);
   }
 
   friend void syncOffset(const untyped_tuple& from, untyped_tuple& to);
-  friend void serialize(
-      const untyped_tuple& from, untyped_tuple& to, void* buffer);
+  friend void serialize(const untyped_tuple& from,
+                        untyped_tuple& to,
+                        void* buffer);
   friend void serializeInUpdating(untyped_tuple& value, void* buffer);
 
  private:
