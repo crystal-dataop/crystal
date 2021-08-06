@@ -22,7 +22,7 @@ size_t bufferSize(const untyped_tuple::meta& value) {
   size_t n = value.size() * sizeof(untyped_tuple::meta::element)
            + sizeof(uint64_t);
   for (auto& em : value) {
-    n += bufferSize(*em.submeta);
+    n += bufferSize(untyped_tuple::meta{em.submeta});
   }
   return n;
 }
@@ -49,7 +49,7 @@ void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {
   uint8_t* p = buf;
   p += n;
   for (size_t i = 0; i < from.size(); ++i) {
-    auto& em = (*from.meta_)[i];
+    auto& em = from.meta_[i];
     switch (em.type) {
 #define CASE(dt, t)                                       \
       case DataType::dt:                                  \

@@ -21,6 +21,7 @@
 
 #include "crystal/serializer/record/AllocMask.h"
 #include "crystal/serializer/record/OffsetPtr.h"
+#include "crystal/serializer/record/containers/Vector.h"
 #include "crystal/type/DataType.h"
 
 namespace crystal {
@@ -38,8 +39,7 @@ inline constexpr auto is_untyped_tuple_v = is_untyped_tuple<T>::value;
 
 class untyped_tuple {
  public:
-  class meta {
-   public:
+  struct meta {
     struct head {
       uint32_t mask : 1;
       uint32_t elem : 31;
@@ -52,20 +52,10 @@ class untyped_tuple {
       OffsetPtr<head> submeta;
     };
 
-   private:
-    OffsetPtr<head> offset_;
+    OffsetPtr<head> offset;
 
-   public:
-    meta(const OffsetPtr<head>& offset) noexcept : offset_(offset) {}
-
-    ~meta() {
+    void release() {
       set_buffer(nullptr);
-    }
-
-    OffsetPtr<head> release() noexcept {
-      auto offset = offset_;
-      offset_ = nullptr;
-      return offset;
     }
 
     void resize(size_t n) {
@@ -82,60 +72,61 @@ class untyped_tuple {
     }
 
     size_t size() const noexcept {
-      return offset_ ? offset_->elem : 0;
+      return offset ? offset->elem : 0;
     }
     size_t fixed_size() const noexcept {
-      return offset_ ? offset_->size : 0;
+      return offset ? offset->size : 0;
     }
 
     element& operator[](size_t i) {
-      return reinterpret_cast<element*>(offset_ + 1)[i];
+      return reinterpret_cast<element*>(offset + 1)[i];
     }
     const element& operator[](size_t i) const {
-      return reinterpret_cast<const element*>(offset_ + 1)[i];
+      return reinterpret_cast<const element*>(offset + 1)[i];
     }
 
     const element* begin() const noexcept {
-      return offset_ ? reinterpret_cast<const element*>(offset_ + 1) : nullptr;
+      return offset ? reinterpret_cast<const element*>(offset + 1) : nullptr;
     }
     const element* end() const noexcept {
       return begin() + size();
     }
 
     template <class T>
-    void add_type(meta&& submeta, uint32_t count) {
-      if (offset_) {
-        new (&operator[](offset_->elem)) element
+    void add_type(const meta& submeta, uint32_t count) {
+      if (offset) {
+        new (&operator[](offset->elem)) element
             {
               DataTypeTraits<T>::value,
               count,
-              offset_->size,
-              submeta.release()
+              offset->size,
+              submeta.offset
             };
-        offset_->size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
+        offset->size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
       }
     }
 
     void set_buffer(void* buffer) {
-      if (offset_) {
-        head* old = offset_.get();
+      head* p = reinterpret_cast<head*>(buffer);
+      if (offset) {
+        head* old = offset.get();
         auto b = begin();
         auto e = end();
-        offset_ = p;
+        offset = p;
         while (b != e) {
-          meta(b->submeta).~meta();
+          meta{b->submeta}.release();
           ++b;
         }
         if (!old->mask) {
           std::free(old);
         }
       } else {
-        offset_ = p;
+        offset = p;
       }
     }
 
-    bool withBufferMask() const noexcept {
-      return offset_ && offset_->mask;
+    bool with_buffer_mask() const noexcept {
+      return offset && offset->mask;
     }
 
     friend void serialize(const meta& from, meta& to, uint8_t* buffer);
@@ -149,10 +140,10 @@ class untyped_tuple {
     set_buffer(nullptr);
   }
 
-  explicit untyped_tuple(const meta* meta) : meta_(meta) {
+  explicit untyped_tuple(const meta& meta) : meta_(meta) {
     reset();
   }
-  untyped_tuple(const meta* meta, void* buffer) : meta_(meta) {
+  untyped_tuple(const meta& meta, void* buffer) : meta_(meta) {
     set_buffer(buffer);
   }
   untyped_tuple(const untyped_tuple& other) {
@@ -192,18 +183,18 @@ class untyped_tuple {
 
   template <class T>
   T& get(size_t i) {
-    return *reinterpret_cast<T*>(offset_ + (*meta_)[i].offset);
+    return *reinterpret_cast<T*>(offset_ + meta_[i].offset);
   }
   template <class T>
   const T& get(size_t i) const {
-    return *reinterpret_cast<const T*>(offset_ + (*meta_)[i].offset);
+    return *reinterpret_cast<const T*>(offset_ + meta_[i].offset);
   }
 
   size_t size() const noexcept {
-    return meta_->size();
+    return meta_.size();
   }
   size_t fixed_size() const noexcept {
-    return meta_->fixed_size();
+    return meta_.fixed_size();
   }
   size_t element_buffer_size(size_t i) const noexcept;
   size_t element_buffer_size_to_update(size_t i) const noexcept;
@@ -232,7 +223,7 @@ class untyped_tuple {
     return offset_ && getMask(offset_);
   }
 
-  friend void syncOffset(const untyped_tuple& from, untyped_tuple& to);
+  friend void syncOffset(untyped_tuple& from, untyped_tuple& to);
   friend void serialize(const untyped_tuple& from,
                         untyped_tuple& to,
                         void* buffer);
@@ -240,7 +231,7 @@ class untyped_tuple {
 
  private:
   OffsetPtr<uint8_t> offset_;
-  OffsetPtr<meta> meta_;
+  meta meta_;
 };
 
 } // namespace crystal

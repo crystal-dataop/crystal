@@ -56,7 +56,7 @@ void place<untyped_tuple>(
   } else {
     for (uint32_t i = 0; i < em.count; ++i) {
       new (reinterpret_cast<untyped_tuple*>(dst) + i)
-        untyped_tuple(em.submeta);
+        untyped_tuple(untyped_tuple::meta{em.submeta});
     }
   }
 }
@@ -90,7 +90,8 @@ void init<untyped_tuple>(
     *reinterpret_cast<vector<untyped_tuple>*>(dst) = vector<untyped_tuple>();
   } else {
     for (uint32_t i = 0; i < em.count; ++i) {
-      *(reinterpret_cast<untyped_tuple*>(dst) + i) = untyped_tuple(em.submeta);
+      *(reinterpret_cast<untyped_tuple*>(dst) + i) =
+        untyped_tuple(untyped_tuple::meta{em.submeta});
     }
   }
 }
@@ -108,7 +109,7 @@ void copy(uint8_t* dst, uint8_t* src, const untyped_tuple::meta::element& em) {
 
 void untyped_tuple::reset() {
   if (offset_) {
-    for (auto& em : *meta_) {
+    for (auto& em : meta_) {
       uint8_t* e = offset_ + em.offset;
       switch (em.type) {
 #define CASE(dt, t) \
@@ -133,8 +134,8 @@ void untyped_tuple::reset() {
       }
     }
   } else {
-    write(meta_->fixed_size(), [&](uint8_t* p) {
-      for (auto& em : *meta_) {
+    write(meta_.fixed_size(), [&](uint8_t* p) {
+      for (auto& em : meta_) {
         uint8_t* e = p + em.offset;
         switch (em.type) {
 #define CASE(dt, t) \
@@ -164,7 +165,7 @@ void untyped_tuple::reset() {
 
 void untyped_tuple::assign(const untyped_tuple& other) {
   if (offset_) {
-    for (auto& em : *meta_) {
+    for (auto& em : meta_) {
       uint8_t* e = offset_ + em.offset;
       uint8_t* o = other.offset_ + em.offset;
       switch (em.type) {
@@ -190,8 +191,8 @@ void untyped_tuple::assign(const untyped_tuple& other) {
       }
     }
   } else {
-    write(meta_->fixed_size(), [&](uint8_t* p) {
-      for (auto& em : *meta_) {
+    write(meta_.fixed_size(), [&](uint8_t* p) {
+      for (auto& em : meta_) {
         uint8_t* e = p + em.offset;
         uint8_t* o = other.offset_ + em.offset;
         switch (em.type) {
@@ -222,7 +223,7 @@ void untyped_tuple::assign(const untyped_tuple& other) {
 
 size_t untyped_tuple::element_buffer_size(size_t i) const noexcept {
   if (offset_) {
-    auto& em = (*meta_)[i];
+    auto& em = meta_[i];
     uint8_t* e = offset_ + em.offset;
     switch (em.type) {
 #define CASE(dt, t) \
@@ -251,7 +252,7 @@ size_t untyped_tuple::element_buffer_size(size_t i) const noexcept {
 
 size_t untyped_tuple::element_buffer_size_to_update(size_t i) const noexcept {
   if (offset_) {
-    auto& em = (*meta_)[i];
+    auto& em = meta_[i];
     uint8_t* e = offset_ + em.offset;
     switch (em.type) {
 #define CASE(dt, t) \

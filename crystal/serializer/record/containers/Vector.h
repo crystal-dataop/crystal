@@ -29,7 +29,7 @@ namespace crystal {
 template <class T>
 class vector;
 template <class T>
-void syncOffset(const vector<T>& from, vector<T>& to);
+void syncOffset(vector<T>& from, vector<T>& to);
 template <class T>
 void serialize(const vector<T>& from, vector<T>& to, void* buffer);
 template <class T>
@@ -223,7 +223,7 @@ class vector {
     return offset_ && getMask(offset_);
   }
 
-  friend void syncOffset<>(const vector<T>& from, vector<T>& to);
+  friend void syncOffset<>(vector<T>& from, vector<T>& to);
   friend void serialize<>(const vector<T>& from, vector<T>& to, void* buffer);
   friend void serializeInUpdating<>(vector<T>& value, void* buffer);
 

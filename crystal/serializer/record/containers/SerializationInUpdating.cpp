@@ -19,17 +19,17 @@
 namespace crystal {
 
 size_t bufferSizeToUpdate(const untyped_tuple::meta& value) {
-  size_t n = value.withBufferMask()
+  size_t n = value.with_buffer_mask()
     ? 0 : value.size() * sizeof(untyped_tuple::meta::element)
         + sizeof(uint64_t);
   for (auto& em : value) {
-    n += bufferSizeToUpdate(*em.submeta);
+    n += bufferSizeToUpdate(untyped_tuple::meta{em.submeta});
   }
   return n;
 }
 
 size_t bufferSizeToUpdate(const untyped_tuple& value) {
-  size_t n = value.withBufferMask() ? 0 : value.fixed_size();
+  size_t n = value.with_buffer_mask() ? 0 : value.fixed_size();
   for (size_t i = 0; i < value.size(); ++i) {
     n += value.element_buffer_size(i);
   }
@@ -40,7 +40,7 @@ void serializeInUpdating(untyped_tuple::meta& value, void* buffer) {
 }
 
 void serializeInUpdating(untyped_tuple& value, void* buffer) {
-  if (!value.withBufferMask()) {
+  if (!value.with_buffer_mask()) {
     uint8_t* old = value.offset_.get();
     uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
     size_t n = value.fixed_size();
@@ -49,7 +49,7 @@ void serializeInUpdating(untyped_tuple& value, void* buffer) {
     uint8_t* p = buf;
     p += n;
     for (size_t i = 0; i < value.size(); ++i) {
-      auto& em = (*value.meta_)[i];
+      auto& em = value.meta_[i];
       switch (em.type) {
 #define CASE(dt, t)                                         \
         case DataType::dt: {                                \
@@ -79,12 +79,12 @@ void serializeInUpdating(untyped_tuple& value, void* buffer) {
       }
       p += value.element_buffer_size_to_update(i);
     }
-    value.setBuffer(buf);
+    value.set_buffer(buf);
   } else {
     uint8_t* old = value.offset_.get();
     uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
     for (size_t i = 0; i < value.size(); ++i) {
-      auto& em = (*value.meta_)[i];
+      auto& em = value.meta_[i];
       switch (em.type) {
 #define CASE(dt, t)                                         \
         case DataType::dt: {                                \

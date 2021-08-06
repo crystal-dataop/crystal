@@ -49,7 +49,7 @@ struct tuple_impl<N, Head> {
   Head& head() { return *reinterpret_cast<Head*>(offset_ + N); }
 
   OffsetPtr<uint8_t> offset_;
-  OffsetPtr<untyped_tuple::meta> meta_;
+  untyped_tuple::meta meta_;
 };
 
 template <class... Args>

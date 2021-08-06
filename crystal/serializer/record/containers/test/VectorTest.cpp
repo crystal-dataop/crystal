@@ -105,7 +105,7 @@ TEST(vector, pair) {
     EXPECT_STREQ("string", v.second.str().c_str());
   }
 
-  EXPECT_EQ(115, bufferSize(vec));
+  EXPECT_EQ(139, bufferSize(vec));
   void* buffer = std::malloc(bufferSize(vec));
   {
     vector<pair<int, string>> to;
@@ -119,9 +119,9 @@ TEST(vector, pair) {
   {
     uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
     vector<pair<int, string>> to = vec;
-    EXPECT_EQ(115, bufferSizeToUpdate(to));
+    EXPECT_EQ(139, bufferSizeToUpdate(to));
     serializeInUpdating(to[0], p);
-    EXPECT_EQ(108, bufferSizeToUpdate(to));
+    EXPECT_EQ(132, bufferSizeToUpdate(to));
     serializeInUpdating(to, p + 7);
     EXPECT_EQ(0, bufferSizeToUpdate(to));
     EXPECT_EQ(6, to.size());

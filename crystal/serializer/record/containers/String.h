@@ -243,7 +243,7 @@ class string {
     return offset_ && getMask(offset_);
   }
 
-  friend void syncOffset(const string& from, string& to);
+  friend void syncOffset(string& from, string& to);
   friend void serialize(const string& from, string& to, void* buffer);
   friend void serializeInUpdating(string& value, void* buffer);
 

@@ -27,57 +27,56 @@ namespace crystal {
 
 template <class T>
 std::enable_if_t<is_tuple_v<T>, untyped_tuple::meta>
-generate_tuple_meta();
+generateTupleMeta();
 
 template <class T>
 inline std::enable_if_t<is_array_v<T>>
-add_element_type(untyped_tuple::meta& meta) {
+addElementType(untyped_tuple::meta& meta) {
   meta.add_type<T::value_type>({}, array_size_v<T>);
 }
 
 template <class T>
 inline std::enable_if_t<is_vector_v<T>>
-add_element_type(untyped_tuple::meta& meta) {
+addElementType(untyped_tuple::meta& meta) {
   meta.add_type<T::value_type>({}, 0);
 }
 
 template <class T>
 inline std::enable_if_t<is_tuple_v<T>>
-add_element_type(untyped_tuple::meta& meta) {
-  meta.add_type<T>(generate_tuple_meta<T>, 1);
+addElementType(untyped_tuple::meta& meta) {
+  meta.add_type<T>(generateTupleMeta<T>, 1);
 }
 
 template <class T>
 inline std::enable_if_t<std::is_arithmetic_v<T> || std::is_same_v<T, string>>
-add_element_type(untyped_tuple::meta& meta) {
+addElementType(untyped_tuple::meta& meta) {
   meta.add_type<T>({}, 1);
 }
 
 template <size_t I, class T>
-struct element_type_to_meta;
+struct ElementTypeToMeta;
 
 template <size_t I, class Head, class... Tail>
-struct element_type_to_meta<I, tuple<Head, Tail...>>
-    : element_type_to_meta<I - 1, tuple<Tail...>> {
-  element_type_to_meta<I, tuple<Head, Tail...>>(untyped_tuple::meta& meta) {
-    add_element_type<Head>(meta);
+struct ElementTypeToMeta<I, tuple<Head, Tail...>>
+    : ElementTypeToMeta<I - 1, tuple<Tail...>> {
+  ElementTypeToMeta<I, tuple<Head, Tail...>>(untyped_tuple::meta& meta) {
+    addElementType<Head>(meta);
   }
 };
 
 template <class Head, class... Tail>
-struct element_type_to_meta<0, tuple<Head, Tail...>> {
-  element_type_to_meta<0, tuple<Head, Tail...>>(untyped_tuple::meta& meta) {
-    add_element_type<Head>(meta);
+struct ElementTypeToMeta<0, tuple<Head, Tail...>> {
+  ElementTypeToMeta<0, tuple<Head, Tail...>>(untyped_tuple::meta& meta) {
+    addElementType<Head>(meta);
   }
 };
 
-
 template <class T>
 std::enable_if_t<is_tuple_v<T>, untyped_tuple::meta>
-generate_tuple_meta() {
+generateTupleMeta() {
   untyped_tuple::meta meta;
   meta.resize(tuple_size_v<T>);
-  element_type_to_meta<tuple_size_v<T> - 1, T> to(meta);
+  ElementTypeToMeta<tuple_size_v<T> - 1, T> to(meta);
   return meta;
 }
 
