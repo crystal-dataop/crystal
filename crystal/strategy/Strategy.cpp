@@ -26,6 +26,7 @@ createStrategy(StrategyType type, const FieldMeta& keyMeta) {
     case StrategyType::kDefault:
       return std::unique_ptr<Strategy>(new DefaultStrategy(keyMeta));
   }
+  return nullptr;
 }
 
 } // namespace crystal
