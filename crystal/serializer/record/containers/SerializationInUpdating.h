@@ -18,6 +18,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 #include <type_traits>
 
 #include "crystal/serializer/record/containers/Array.h"
@@ -27,10 +28,6 @@
 #include "crystal/serializer/record/containers/Vector.h"
 
 namespace crystal {
-
-inline size_t bufferSizeToUpdate(const bool&) {
-  return 0;
-}
 
 template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
 inline size_t bufferSizeToUpdate(const T&) {
@@ -68,22 +65,10 @@ size_t bufferSizeToUpdate(const vector<T>& value) {
 size_t bufferSizeToUpdate(const untyped_tuple::meta& value);
 size_t bufferSizeToUpdate(const untyped_tuple& value);
 
-inline void syncOffset(bool&, bool&) {
-}
-inline void serializeInUpdating(bool&, void*) {
-}
-
-template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-inline void syncOffset(T&, T&) {
-}
 template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
 inline void serializeInUpdating(T&, void*) {
 }
 
-inline void syncOffset(string& from, string& to) {
-  to.offset_ = from.offset_;
-  from.offset_ = nullptr;
-}
 inline void serializeInUpdating(string& value, void* buffer) {
   if (!value.with_buffer_mask()) {
     uint8_t* old = value.offset_.get();
@@ -95,23 +80,12 @@ inline void serializeInUpdating(string& value, void* buffer) {
 }
 
 template <class T1, class T2>
-inline void syncOffset(pair<T1, T2>& from, pair<T1, T2>& to) {
-  syncOffset(from.first, to.first);
-  syncOffset(from.second, to.second);
-}
-template <class T1, class T2>
 inline void serializeInUpdating(pair<T1, T2>& value, void* buffer) {
   uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
   serializeInUpdating(value.first, p);
   serializeInUpdating(value.second, p + bufferSizeToUpdate(value.first));
 }
 
-template <class T, size_t N>
-void syncOffset(array<T, N>& from, array<T, N>& to) {
-  for (size_t i = 0; i < N; ++i) {
-    syncOffset(from[i], to[i]);
-  }
-}
 template <class T, size_t N>
 void serializeInUpdating(array<T, N>& value, void* buffer) {
   uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
@@ -122,48 +96,39 @@ void serializeInUpdating(array<T, N>& value, void* buffer) {
 }
 
 template <class T>
-inline void syncOffset(vector<T>& from, vector<T>& to) {
-  to.offset_ = from.offset_;
-}
-template <class T>
 void serializeInUpdating(vector<T>& value, void* buffer) {
   if (!value.with_buffer_mask()) {
     uint8_t* old = value.offset_.get();
     uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
-    size_t n = value.fixed_size();
-    std::memcpy(buf, old, n);
-    setMask(buf);
-    uint8_t* p = buf;
-    p += n;
     size_t size = value.size();
     size_t bytes = calcBytes(size);
+    std::memcpy(buf, old, bytes);
+    setMask(buf);
+    uint8_t* p = buf + value.fixed_size();
     for (size_t i = 0; i < size; ++i) {
       T& from = reinterpret_cast<T*>(old + bytes)[i];
       T& to = reinterpret_cast<T*>(buf + bytes)[i];
-      n = bufferSizeToUpdate(from);
-      syncOffset(from, to);
-      serializeInUpdating(to, p);
+      size_t n = bufferSizeToUpdate(from);
+      serializeInUpdating(from, p);
+      new (&to) T();
+      new (&to) T(std::move(from));
       p += n;
     }
     value.set_buffer(buf);
   } else {
     uint8_t* old = value.offset_.get();
     uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
-    size_t n = 0;
     size_t size = value.size();
     size_t bytes = calcBytes(size);
     for (size_t i = 0; i < size; ++i) {
       T& from = reinterpret_cast<T*>(old + bytes)[i];
-      n = bufferSizeToUpdate(from);
+      size_t n = bufferSizeToUpdate(from);
       serializeInUpdating(from, p);
       p += n;
     }
   }
 }
 
-inline void syncOffset(untyped_tuple& from, untyped_tuple& to) {
-  to.offset_ = from.offset_;
-}
 void serializeInUpdating(untyped_tuple::meta& value, void* buffer);
 void serializeInUpdating(untyped_tuple& value, void* buffer);
 

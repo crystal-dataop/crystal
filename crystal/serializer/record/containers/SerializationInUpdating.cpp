@@ -55,7 +55,6 @@ void serializeInUpdating(untyped_tuple& value, void* buffer) {
         case DataType::dt: {                                \
           t& from = *reinterpret_cast<t*>(old + em.offset); \
           t& to = *reinterpret_cast<t*>(buf + em.offset);   \
-          syncOffset(from, to);                             \
           serializeInUpdating(to, p);                       \
           break;                                            \
         }

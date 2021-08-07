@@ -28,10 +28,6 @@
 
 namespace crystal {
 
-inline size_t bufferSize(const bool&) {
-  return 0;
-}
-
 template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
 inline size_t bufferSize(const T&) {
   return 0;
@@ -68,11 +64,9 @@ size_t bufferSize(const vector<T>& value) {
 size_t bufferSize(const untyped_tuple::meta& value);
 size_t bufferSize(const untyped_tuple& value);
 
-inline void serialize(const bool&, bool&, void*) {
-}
-
 template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-inline void serialize(const T&, T&, void*) {
+inline void serialize(const T& from, T& to, void*) {
+  to = from;
 }
 
 inline void serialize(const string& from, string& to, void* buffer) {
@@ -104,18 +98,17 @@ template <class T>
 void serialize(const vector<T>& from, vector<T>& to, void* buffer) {
   uint8_t* old = from.offset_.get();
   uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
-  size_t n = from.fixed_size();
-  std::memcpy(buf, old, n);
-  setMask(buf);
-  uint8_t* p = buf;
-  p += n;
   size_t size = from.size();
   size_t bytes = calcBytes(size);
+  std::memcpy(buf, old, bytes);
+  setMask(buf);
+  uint8_t* p = buf + from.fixed_size();
   for (size_t i = 0; i < size; ++i) {
-    serialize(reinterpret_cast<T*>(old + bytes)[i],
-              reinterpret_cast<T*>(buf + bytes)[i],
-              p);
-    p += bufferSize(reinterpret_cast<T*>(old + bytes)[i]);
+    T& from = reinterpret_cast<T*>(old + bytes)[i];
+    T& to = reinterpret_cast<T*>(buf + bytes)[i];
+    size_t n = bufferSize(from);
+    serialize(from, to, p);
+    p += n;
   }
   to.offset_ = buf;
 }
