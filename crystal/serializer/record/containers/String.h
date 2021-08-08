@@ -26,6 +26,7 @@
 
 #include "crystal/serializer/record/AllocMask.h"
 #include "crystal/serializer/record/OffsetPtr.h"
+#include "crystal/type/DataType.h"
 
 namespace crystal {
 
@@ -219,6 +220,7 @@ class string {
       throw std::overflow_error("string::write");
     }
     uint8_t* p = reinterpret_cast<uint8_t*>(std::malloc(n + bytes));
+    setMask(p, false);
     setSize(p, n);
     if (n > 0) {
       f(reinterpret_cast<char*>(p + bytes), n);
@@ -243,7 +245,6 @@ class string {
     return offset_ && getMask(offset_);
   }
 
-  friend void syncOffset(string& from, string& to);
   friend void serialize(const string& from, string& to, void* buffer);
   friend void serializeInUpdating(string& value, void* buffer);
 
@@ -251,6 +252,13 @@ class string {
 
  private:
   OffsetPtr<uint8_t> offset_;
+};
+
+template <>
+struct DataTypeTraits<string> {
+  enum {
+    value = static_cast<int>(DataType::STRING)
+  };
 };
 
 } // namespace crystal

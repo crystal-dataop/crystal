@@ -3,4 +3,5 @@
 test_sources(
   StringTest.cpp
   VectorTest.cpp
+  UnTypedTupleTest.cpp
 )

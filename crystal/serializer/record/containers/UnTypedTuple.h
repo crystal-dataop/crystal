@@ -58,15 +58,17 @@ class untyped_tuple {
       set_buffer(nullptr);
     }
 
-    void resize(size_t n) {
+    void reserve(size_t n) {
       if (n == size()) {
         return;
       }
       if (n >> kNoMaskBitCount<uint32_t> > 0) {
-        throw std::overflow_error("meta::resize");
+        throw std::overflow_error("meta::reserve");
       }
       head* p = reinterpret_cast<head*>(
           std::malloc(n * sizeof(element) + sizeof(head)));
+      p->mask = 0;
+      p->elem = 0;
       p->size = 1;
       set_buffer(p);
     }
@@ -97,11 +99,12 @@ class untyped_tuple {
       if (offset) {
         new (&operator[](offset->elem)) element
             {
-              DataTypeTraits<T>::value,
+              static_cast<DataType>(DataTypeTraits<T>::value),
               count,
               offset->size,
               submeta.offset
             };
+        offset->elem++;
         offset->size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
       }
     }
@@ -202,6 +205,7 @@ class untyped_tuple {
   template <class F>
   void write(size_t size, F f) {
     uint8_t* p = reinterpret_cast<uint8_t*>(std::malloc(size + 1));
+    setMask(p, false);
     f(p);
     set_buffer(p);
   }
@@ -223,7 +227,6 @@ class untyped_tuple {
     return offset_ && getMask(offset_);
   }
 
-  friend void syncOffset(untyped_tuple& from, untyped_tuple& to);
   friend void serialize(const untyped_tuple& from,
                         untyped_tuple& to,
                         void* buffer);

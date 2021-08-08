@@ -29,8 +29,6 @@ namespace crystal {
 template <class T>
 class vector;
 template <class T>
-void syncOffset(vector<T>& from, vector<T>& to);
-template <class T>
 void serialize(const vector<T>& from, vector<T>& to, void* buffer);
 template <class T>
 void serializeInUpdating(vector<T>& value, void* buffer);
@@ -193,6 +191,7 @@ class vector {
       throw std::overflow_error("vector::write");
     }
     uint8_t* p = reinterpret_cast<uint8_t*>(std::malloc(n * sizeof(T) + bytes));
+    setMask(p, false);
     setSize(p, n);
     if (n > 0) {
       f(reinterpret_cast<T*>(p + bytes), n);
@@ -223,7 +222,6 @@ class vector {
     return offset_ && getMask(offset_);
   }
 
-  friend void syncOffset<>(vector<T>& from, vector<T>& to);
   friend void serialize<>(const vector<T>& from, vector<T>& to, void* buffer);
   friend void serializeInUpdating<>(vector<T>& value, void* buffer);
 

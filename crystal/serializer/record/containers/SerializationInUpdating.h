@@ -74,7 +74,7 @@ inline void serializeInUpdating(string& value, void* buffer) {
     uint8_t* old = value.offset_.get();
     uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
     std::memcpy(buf, old, bufferSizeToUpdate(value));
-    setMask(buf);
+    setMask(buf, true);
     value.set_buffer(buf);
   }
 }
@@ -103,7 +103,7 @@ void serializeInUpdating(vector<T>& value, void* buffer) {
     size_t size = value.size();
     size_t bytes = calcBytes(size);
     std::memcpy(buf, old, bytes);
-    setMask(buf);
+    setMask(buf, true);
     uint8_t* p = buf + value.fixed_size();
     for (size_t i = 0; i < size; ++i) {
       T& from = reinterpret_cast<T*>(old + bytes)[i];

@@ -64,6 +64,13 @@ struct is_tuple<tuple<T...>> : std::true_type {};
 template <class T>
 inline constexpr auto is_tuple_v = is_tuple<T>::value;
 
+template <class... T>
+struct DataTypeTraits<tuple<T...>> {
+  enum {
+    value = static_cast<int>(DataType::TUPLE)
+  };
+};
+
 template <size_t I, size_t N, class Head, class... Tail,
           std::enable_if_t<I == 0U, int> = 0>
 Head& get(tuple_impl<N, Head, Tail...>& t) {

@@ -73,7 +73,7 @@ inline void serialize(const string& from, string& to, void* buffer) {
   uint8_t* old = from.offset_.get();
   uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
   std::memcpy(buf, old, bufferSize(from));
-  setMask(buf);
+  setMask(buf, true);
   to.offset_ = buf;
 }
 
@@ -101,7 +101,7 @@ void serialize(const vector<T>& from, vector<T>& to, void* buffer) {
   size_t size = from.size();
   size_t bytes = calcBytes(size);
   std::memcpy(buf, old, bytes);
-  setMask(buf);
+  setMask(buf, true);
   uint8_t* p = buf + from.fixed_size();
   for (size_t i = 0; i < size; ++i) {
     T& from = reinterpret_cast<T*>(old + bytes)[i];

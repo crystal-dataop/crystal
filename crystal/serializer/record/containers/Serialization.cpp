@@ -45,7 +45,7 @@ void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {
   uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
   size_t n = from.fixed_size();
   std::memcpy(buf, old, n);
-  setMask(buf);
+  setMask(buf, true);
   uint8_t* p = buf;
   p += n;
   for (size_t i = 0; i < from.size(); ++i) {

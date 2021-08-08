@@ -59,8 +59,8 @@ inline size_t calcBytes(size_t n) {
   return 0;
 }
 
-inline void setMask(uint8_t* p) {
-  reinterpret_cast<Head*>(p)->mask = 1;
+inline void setMask(uint8_t* p, bool mask) {
+  reinterpret_cast<Head*>(p)->mask = mask ? 1 : 0;
 }
 
 inline void setSize(uint8_t* p, size_t n) {

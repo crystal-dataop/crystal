@@ -24,7 +24,7 @@ TEST(mask, get_and_set) {
   uint8_t h = 0;
   EXPECT_FALSE(getMask(&h));
   EXPECT_FALSE(h & 0x1);
-  setMask(&h);
+  setMask(&h, true);
   EXPECT_TRUE(getMask(&h));
   EXPECT_TRUE(h & 0x1);
 }

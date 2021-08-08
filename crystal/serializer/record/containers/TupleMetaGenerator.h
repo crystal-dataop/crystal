@@ -29,54 +29,53 @@ template <class T>
 std::enable_if_t<is_tuple_v<T>, untyped_tuple::meta>
 generateTupleMeta();
 
+namespace detail {
+
+template <class T>
+inline std::enable_if_t<std::is_arithmetic_v<T> || std::is_same_v<T, string>>
+addElementTypeImpl(untyped_tuple::meta& meta) {
+  meta.add_type<T>(untyped_tuple::meta{}, 1);
+}
+
 template <class T>
 inline std::enable_if_t<is_array_v<T>>
-addElementType(untyped_tuple::meta& meta) {
-  meta.add_type<T::value_type>({}, array_size_v<T>);
+addElementTypeImpl(untyped_tuple::meta& meta) {
+  meta.add_type<typename T::value_type>(untyped_tuple::meta{}, array_size_v<T>);
 }
 
 template <class T>
 inline std::enable_if_t<is_vector_v<T>>
-addElementType(untyped_tuple::meta& meta) {
-  meta.add_type<T::value_type>({}, 0);
+addElementTypeImpl(untyped_tuple::meta& meta) {
+  meta.add_type<typename T::value_type>(untyped_tuple::meta{}, 0);
 }
 
 template <class T>
 inline std::enable_if_t<is_tuple_v<T>>
-addElementType(untyped_tuple::meta& meta) {
-  meta.add_type<T>(generateTupleMeta<T>, 1);
+addElementTypeImpl(untyped_tuple::meta& meta) {
+  meta.add_type<T>(generateTupleMeta<T>(), 1);
 }
 
-template <class T>
-inline std::enable_if_t<std::is_arithmetic_v<T> || std::is_same_v<T, string>>
-addElementType(untyped_tuple::meta& meta) {
-  meta.add_type<T>({}, 1);
+} // namespace detail
+
+template <size_t I, class T,
+          std::enable_if_t<I + 1 == tuple_size_v<T>, int> = 0>
+void addElementType(untyped_tuple::meta& meta) {
+  detail::addElementTypeImpl<typename tuple_element<I, T>::type>(meta);
 }
 
-template <size_t I, class T>
-struct ElementTypeToMeta;
-
-template <size_t I, class Head, class... Tail>
-struct ElementTypeToMeta<I, tuple<Head, Tail...>>
-    : ElementTypeToMeta<I - 1, tuple<Tail...>> {
-  ElementTypeToMeta<I, tuple<Head, Tail...>>(untyped_tuple::meta& meta) {
-    addElementType<Head>(meta);
-  }
-};
-
-template <class Head, class... Tail>
-struct ElementTypeToMeta<0, tuple<Head, Tail...>> {
-  ElementTypeToMeta<0, tuple<Head, Tail...>>(untyped_tuple::meta& meta) {
-    addElementType<Head>(meta);
-  }
-};
+template <size_t I, class T,
+          std::enable_if_t<I + 1 != tuple_size_v<T>, int> = 0>
+void addElementType(untyped_tuple::meta& meta) {
+  detail::addElementTypeImpl<typename tuple_element<I, T>::type>(meta);
+  addElementType<I + 1, T>(meta);
+}
 
 template <class T>
 std::enable_if_t<is_tuple_v<T>, untyped_tuple::meta>
 generateTupleMeta() {
   untyped_tuple::meta meta;
-  meta.resize(tuple_size_v<T>);
-  ElementTypeToMeta<tuple_size_v<T> - 1, T> to(meta);
+  meta.reserve(tuple_size_v<T>);
+  addElementType<0, T>(meta);
   return meta;
 }
 
