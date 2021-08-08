@@ -63,6 +63,7 @@ size_t bufferSizeToUpdate(const vector<T>& value) {
 }
 
 size_t bufferSizeToUpdate(const untyped_tuple::meta& value);
+
 size_t bufferSizeToUpdate(const untyped_tuple& value);
 
 template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
@@ -106,12 +107,12 @@ void serializeInUpdating(vector<T>& value, void* buffer) {
     setMask(buf, true);
     uint8_t* p = buf + value.fixed_size();
     for (size_t i = 0; i < size; ++i) {
-      T& from = reinterpret_cast<T*>(old + bytes)[i];
-      T& to = reinterpret_cast<T*>(buf + bytes)[i];
-      size_t n = bufferSizeToUpdate(from);
-      serializeInUpdating(from, p);
-      new (&to) T();
-      new (&to) T(std::move(from));
+      T& subfrom = reinterpret_cast<T*>(old + bytes)[i];
+      T& subto = reinterpret_cast<T*>(buf + bytes)[i];
+      size_t n = bufferSizeToUpdate(subfrom);
+      serializeInUpdating(subfrom, p);
+      new (&subto) T();
+      new (&subto) T(std::move(subfrom));
       p += n;
     }
     value.set_buffer(buf);
@@ -121,15 +122,16 @@ void serializeInUpdating(vector<T>& value, void* buffer) {
     size_t size = value.size();
     size_t bytes = calcBytes(size);
     for (size_t i = 0; i < size; ++i) {
-      T& from = reinterpret_cast<T*>(old + bytes)[i];
-      size_t n = bufferSizeToUpdate(from);
-      serializeInUpdating(from, p);
+      T& subfrom = reinterpret_cast<T*>(old + bytes)[i];
+      size_t n = bufferSizeToUpdate(subfrom);
+      serializeInUpdating(subfrom, p);
       p += n;
     }
   }
 }
 
 void serializeInUpdating(untyped_tuple::meta& value, void* buffer);
+
 void serializeInUpdating(untyped_tuple& value, void* buffer);
 
 } // namespace crystal

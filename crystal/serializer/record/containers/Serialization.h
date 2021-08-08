@@ -35,7 +35,7 @@ inline size_t bufferSize(const T&) {
 
 inline size_t bufferSize(const string& value) {
   size_t n = value.size();
-  return n + calcBytes(n);
+  return n + (n ? calcBytes(n) : 0);
 }
 
 template <class T1, class T2>
@@ -105,10 +105,10 @@ void serialize(const vector<T>& from, vector<T>& to, void* buffer) {
   setMask(buf, true);
   uint8_t* p = buf + from.fixed_size();
   for (size_t i = 0; i < size; ++i) {
-    T& from = reinterpret_cast<T*>(old + bytes)[i];
-    T& to = reinterpret_cast<T*>(buf + bytes)[i];
-    size_t n = bufferSize(from);
-    serialize(from, to, p);
+    T& subfrom = reinterpret_cast<T*>(old + bytes)[i];
+    T& subto = reinterpret_cast<T*>(buf + bytes)[i];
+    size_t n = bufferSize(subfrom);
+    serialize(subfrom, subto, p);
     p += n;
   }
   to.offset_ = buf;

@@ -2,6 +2,7 @@
 
 test_sources(
   StringTest.cpp
-  VectorTest.cpp
+  TupleMetaTest.cpp
   UnTypedTupleTest.cpp
+  VectorTest.cpp
 )

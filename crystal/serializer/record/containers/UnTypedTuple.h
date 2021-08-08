@@ -138,7 +138,7 @@ class untyped_tuple {
   };
 
  public:
-  untyped_tuple() noexcept = delete;
+  untyped_tuple() noexcept = default;
 
   ~untyped_tuple() {
     set_buffer(nullptr);
@@ -150,18 +150,20 @@ class untyped_tuple {
   untyped_tuple(const meta& meta, void* buffer) : meta_(meta) {
     set_buffer(buffer);
   }
-  untyped_tuple(const untyped_tuple& other) {
+  untyped_tuple(const untyped_tuple& other) : meta_(other.meta_) {
     assign(other);
   }
-  untyped_tuple(untyped_tuple&& other) noexcept {
+  untyped_tuple(untyped_tuple&& other) noexcept : meta_(other.meta_) {
     std::swap(offset_, other.offset_);
   }
 
   untyped_tuple& operator=(const untyped_tuple& other) {
+    meta_ = other.meta_;
     assign(other);
     return *this;
   }
   untyped_tuple& operator=(untyped_tuple&& other) noexcept {
+    meta_ = other.meta_;
     std::swap(offset_, other.offset_);
     return *this;
   }

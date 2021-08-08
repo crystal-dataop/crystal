@@ -21,7 +21,9 @@ namespace crystal {
 size_t bufferSize(const untyped_tuple::meta& value) {
   size_t n = value.fixed_size();
   for (auto& em : value) {
-    n += bufferSize(untyped_tuple::meta{em.submeta});
+    if (em.submeta != nullptr) {
+      n += bufferSize(untyped_tuple::meta{em.submeta});
+    }
   }
   return n;
 }
@@ -39,12 +41,11 @@ void serialize(const untyped_tuple::meta& from,
                void* buffer) {
   untyped_tuple::meta::head* buf =
     reinterpret_cast<untyped_tuple::meta::head*>(buffer);
-  size_t size = from.size();
   size_t n = from.fixed_size();
   std::memcpy(buf, from.offset.get(), n);
   buf->mask = 1;
   uint8_t* p = reinterpret_cast<uint8_t*>(buf) + n;
-  for (size_t i = 0; i < size; ++i) {
+  for (size_t i = 0; i < from.size(); ++i) {
     if (from[i].submeta != nullptr) {
       const untyped_tuple::meta& subfrom =
         *reinterpret_cast<const untyped_tuple::meta*>(&from[i].submeta);
@@ -62,20 +63,32 @@ void serialize(const untyped_tuple::meta& from,
 void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {
   uint8_t* old = from.offset_.get();
   uint8_t* buf = reinterpret_cast<uint8_t*>(buffer);
-  size_t n = from.fixed_size();
-  std::memcpy(buf, old, n);
+  std::memcpy(buf, old, 1);
   setMask(buf, true);
-  uint8_t* p = buf;
-  p += n;
+  uint8_t* p = buf + from.fixed_size();
   for (size_t i = 0; i < from.size(); ++i) {
     auto& em = from.meta_[i];
     switch (em.type) {
-#define CASE(dt, t)                                       \
-      case DataType::dt:                                  \
-        serialize(*reinterpret_cast<t*>(old + em.offset), \
-                  *reinterpret_cast<t*>(buf + em.offset), \
-                  p);                                     \
-        break;
+#define CASE(dt, t)                                                 \
+      case DataType::dt: {                                          \
+        if (em.count == 0) {                                        \
+          using vt = vector<t>;                                     \
+          vt& subfrom = *reinterpret_cast<vt*>(old + em.offset);    \
+          vt& subto = *reinterpret_cast<vt*>(buf + em.offset);      \
+          size_t n = bufferSize(subfrom);                           \
+          serialize(subfrom, subto, p);                             \
+          p += n;                                                   \
+        } else {                                                    \
+          for (uint32_t k = 0; k < em.count; ++k) {                 \
+            t& subfrom = reinterpret_cast<t*>(old + em.offset)[k];  \
+            t& subto = reinterpret_cast<t*>(buf + em.offset)[k];    \
+            size_t n = bufferSize(subfrom);                         \
+            serialize(subfrom, subto, p);                           \
+            p += n;                                                 \
+          }                                                         \
+        }                                                           \
+        break;                                                      \
+      }
 
       CASE(BOOL, bool)
       CASE(INT8, int8_t)
@@ -94,7 +107,6 @@ void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {
 
 #undef CASE
     }
-    p += from.element_buffer_size(i);
   }
   to.meta_ = from.meta_;
   to.offset_ = buf;
