@@ -19,8 +19,7 @@
 namespace crystal {
 
 size_t bufferSize(const untyped_tuple::meta& value) {
-  size_t n = value.size() * sizeof(untyped_tuple::meta::element)
-           + sizeof(uint64_t);
+  size_t n = value.fixed_size();
   for (auto& em : value) {
     n += bufferSize(untyped_tuple::meta{em.submeta});
   }
@@ -38,6 +37,26 @@ size_t bufferSize(const untyped_tuple& value) {
 void serialize(const untyped_tuple::meta& from,
                untyped_tuple::meta& to,
                void* buffer) {
+  untyped_tuple::meta::head* buf =
+    reinterpret_cast<untyped_tuple::meta::head*>(buffer);
+  size_t size = from.size();
+  size_t n = from.fixed_size();
+  std::memcpy(buf, from.offset.get(), n);
+  buf->mask = 1;
+  uint8_t* p = reinterpret_cast<uint8_t*>(buf) + n;
+  for (size_t i = 0; i < size; ++i) {
+    if (from[i].submeta != nullptr) {
+      const untyped_tuple::meta& subfrom =
+        *reinterpret_cast<const untyped_tuple::meta*>(&from[i].submeta);
+      untyped_tuple::meta& subto =
+        *reinterpret_cast<untyped_tuple::meta*>(
+            &untyped_tuple::meta{buf}[i].submeta);
+      n = bufferSize(subfrom);
+      serialize(subfrom, subto, p);
+      p += n;
+    }
+  }
+  to.offset = buf;
 }
 
 void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {

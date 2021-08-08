@@ -62,6 +62,7 @@ size_t bufferSize(const vector<T>& value) {
 }
 
 size_t bufferSize(const untyped_tuple::meta& value);
+
 size_t bufferSize(const untyped_tuple& value);
 
 template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
@@ -116,6 +117,7 @@ void serialize(const vector<T>& from, vector<T>& to, void* buffer) {
 void serialize(const untyped_tuple::meta& from,
                untyped_tuple::meta& to,
                void* buffer);
+
 void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer);
 
 } // namespace crystal

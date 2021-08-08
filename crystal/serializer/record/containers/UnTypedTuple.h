@@ -77,6 +77,10 @@ class untyped_tuple {
       return offset ? offset->elem : 0;
     }
     size_t fixed_size() const noexcept {
+      return offset ? offset->elem * sizeof(untyped_tuple::meta::element)
+                      + sizeof(untyped_tuple::meta::head) : 0;
+    }
+    size_t tuple_fixed_size() const noexcept {
       return offset ? offset->size : 0;
     }
 
@@ -131,9 +135,6 @@ class untyped_tuple {
     bool with_buffer_mask() const noexcept {
       return offset && offset->mask;
     }
-
-    friend void serialize(const meta& from, meta& to, uint8_t* buffer);
-    friend void serializeInUpdating(meta& value, void* buffer);
   };
 
  public:
@@ -197,7 +198,7 @@ class untyped_tuple {
     return meta_.size();
   }
   size_t fixed_size() const noexcept {
-    return meta_.fixed_size();
+    return meta_.tuple_fixed_size();
   }
   size_t element_buffer_size(size_t i) const noexcept;
   size_t element_buffer_size_to_update(size_t i) const noexcept;
