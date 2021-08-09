@@ -115,7 +115,7 @@ template <class T, size_t N>
 struct is_array<array<T, N>> : std::true_type {};
 
 template <class T>
-inline constexpr auto is_array_v = is_array<T>::value;
+inline constexpr bool is_array_v = is_array<T>::value;
 
 template <class T>
 struct array_size;

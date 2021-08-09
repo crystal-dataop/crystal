@@ -35,7 +35,7 @@ template <>
 struct is_untyped_tuple<untyped_tuple> : std::true_type {};
 
 template <class T>
-inline constexpr auto is_untyped_tuple_v = is_untyped_tuple<T>::value;
+inline constexpr bool is_untyped_tuple_v = is_untyped_tuple<T>::value;
 
 class untyped_tuple {
  public:

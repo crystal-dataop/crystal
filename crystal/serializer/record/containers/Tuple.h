@@ -62,7 +62,7 @@ template <class... T>
 struct is_tuple<tuple<T...>> : std::true_type {};
 
 template <class T>
-inline constexpr auto is_tuple_v = is_tuple<T>::value;
+inline constexpr bool is_tuple_v = is_tuple<T>::value;
 
 template <class... T>
 struct DataTypeTraits<tuple<T...>> {

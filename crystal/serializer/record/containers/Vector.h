@@ -236,6 +236,6 @@ template <class T>
 struct is_vector<vector<T>> : std::true_type {};
 
 template <class T>
-inline constexpr auto is_vector_v = is_vector<T>::value;
+inline constexpr bool is_vector_v = is_vector<T>::value;
 
 } // namespace crystal
