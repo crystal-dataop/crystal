@@ -27,29 +27,36 @@ namespace crystal {
 
 template <size_t N, class Head, class... Tail>
 struct tuple_impl : public tuple_impl<N + sizeof(Head), Tail...> {
+  using meta_type = untyped_tuple::meta;
+
   tuple_impl() = default;
-  tuple_impl(Head&& first, Tail&&... tail)
-      : tuple_impl<N + sizeof(Head), Tail...>{std::forward<Tail>(tail)...} {
+  tuple_impl(const meta_type& meta, Head&& first, Tail&&... tail)
+      : tuple_impl<N + sizeof(Head), Tail...>{meta, std::forward<Tail>(tail)...}
+  {
     head() = std::forward<Head>(first);
   }
 
   Head& head() {
     return *reinterpret_cast<Head*>(
-        *reinterpret_cast<OffsetPtr<uint8_t>*>(this) + N);
+        &reinterpret_cast<untyped_tuple*>(this)->get<uint8_t>(0) + N);
   }
 };
 
 template <size_t N, class Head>
 struct tuple_impl<N, Head> {
+  using meta_type = untyped_tuple::meta;
+
   tuple_impl() = default;
-  explicit tuple_impl(Head&& first) {
+  explicit tuple_impl(const meta_type& meta, Head&& first) {
+    untyped_tuple_.reset(meta);
     head() = std::forward<Head>(first);
   }
 
-  Head& head() { return *reinterpret_cast<Head*>(offset_ + N); }
+  Head& head() {
+    return *reinterpret_cast<Head*>(&untyped_tuple_.get<uint8_t>(0) + N);
+  }
 
-  OffsetPtr<uint8_t> offset_;
-  untyped_tuple::meta meta_;
+  untyped_tuple untyped_tuple_;
 };
 
 template <class... Args>
@@ -71,6 +78,31 @@ struct DataTypeTraits<tuple<T...>> {
   };
 };
 
+template <class T>
+struct unwrap_refwrapper {
+  using type = T;
+};
+
+template <class T>
+struct unwrap_refwrapper<std::reference_wrapper<T>> {
+  using type = T&;
+};
+
+template <class T>
+using unwrap_decay_t =
+    typename unwrap_refwrapper<typename std::decay<T>::type>::type;
+
+template <class T>
+std::enable_if_t<is_tuple_v<T>, untyped_tuple::meta>
+generateTupleMeta();
+
+template <class... Args>
+constexpr tuple<unwrap_decay_t<Args>...> make_tuple(Args&&... args) {
+  return tuple<unwrap_decay_t<Args>...>(
+      generateTupleMeta<tuple<unwrap_decay_t<Args>...>>(),
+      std::forward<Args>(args)...);
+}
+
 template <size_t I, size_t N, class Head, class... Tail,
           std::enable_if_t<I == 0U, int> = 0>
 Head& get(tuple_impl<N, Head, Tail...>& t) {
@@ -81,11 +113,6 @@ template <size_t I, size_t N, class Head, class... Tail,
           std::enable_if_t<I != 0U, int> = 0>
 auto& get(tuple_impl<N, Head, Tail...>& t) {
   return get<I - 1U, N + sizeof(Head), Tail...>(t);
-}
-
-template <size_t I, class... Args>
-auto& get(tuple<Args...>& t) {
-  return get<I, 0, Args...>(t);
 }
 
 template <size_t I, size_t N, class Head, class... Tail,
@@ -100,11 +127,6 @@ auto const& get(tuple_impl<N, Head, Tail...> const& t) {
   return get<I - 1U, N + sizeof(Head), Tail...>(t);
 }
 
-template <size_t I, class... Args>
-auto const& get(tuple<Args...> const& t) {
-  return get<I, 0, Args...>(t);
-}
-
 template <size_t I, size_t N, class Head, class... Tail,
           std::enable_if_t<I == 0U, int> = 0>
 Head&& get(tuple_impl<N, Head, Tail...>&& t) {
@@ -115,11 +137,6 @@ template <size_t I, size_t N, class Head, class... Tail,
           std::enable_if_t<I != 0U, int> = 0>
 auto&& get(tuple_impl<N, Head, Tail...>&& t) {
   return get<I - 1U, N + sizeof(Head), Tail...>(t);
-}
-
-template <size_t I, class... Args>
-auto&& get(tuple<Args...>&& t) {
-  return get<I, 0, Args...>(t);
 }
 
 template <class T>

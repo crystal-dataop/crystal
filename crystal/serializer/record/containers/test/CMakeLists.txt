@@ -3,6 +3,7 @@
 test_sources(
   StringTest.cpp
   TupleMetaTest.cpp
+  TupleTest.cpp
   UnTypedTupleTest.cpp
   VectorTest.cpp
 )

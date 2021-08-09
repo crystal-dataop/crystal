@@ -18,62 +18,89 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <type_traits>
 
 namespace crystal {
 
+namespace detail {
+
 template <class T, size_t N>
-class array {
- public:
+struct array_traits {
+  typedef T type[N];
+
+  static constexpr T& ref(const type& a, size_t i) noexcept {
+    return const_cast<T&>(a[i]);
+  }
+  static constexpr T* ptr(const type& a) noexcept {
+    return const_cast<T*>(a);
+  }
+};
+
+template <class T>
+struct array_traits<T, 0> {
+  struct type {};
+
+  static constexpr T& ref(const type&, size_t) noexcept {
+    return *static_cast<T*>(nullptr);
+  }
+  static constexpr T* ptr(const type&) noexcept {
+    return nullptr;
+  }
+};
+
+} // namespace detail
+
+template <class T, size_t N>
+struct array {
   using value_type = T;
   using reference = value_type&;
   using const_reference = const value_type&;
   using iterator = value_type*;
   using const_iterator = const value_type*;
 
-  array() noexcept = default;
-  ~array() = default;
-
-  array& operator=(const array&) = default;
+  typename detail::array_traits<T, N>::type elements_;
 
   constexpr reference at(size_t pos) {
-    if (pos >= size()) {
+    if (pos >= N) {
       throw std::out_of_range("array::at");
     }
-    return elements_[pos];
+    return detail::array_traits<T, N>::ref(elements_, pos);
   }
   constexpr const_reference at(size_t pos) const {
-    if (pos >= size()) {
+    if (pos >= N) {
       throw std::out_of_range("array::at");
     }
-    return elements_[pos];
+    return detail::array_traits<T, N>::ref(elements_, pos);
   }
 
   constexpr reference operator[](size_t pos) {
-    return elements_[pos];
+    return detail::array_traits<T, N>::ref(elements_, pos);
   }
   constexpr const_reference operator[](size_t pos) const {
-    return elements_[pos];
+    return detail::array_traits<T, N>::ref(elements_, pos);
   }
 
   constexpr T& front() {
-    return elements_[0];
+    return detail::array_traits<T, N>::ref(elements_, 0);
   }
   constexpr const T& front() const {
-    return elements_[0];
+    return detail::array_traits<T, N>::ref(elements_, 0);
   }
 
   constexpr T& back() {
-    return elements_[size() - 1];
+    return N ? detail::array_traits<T, N>::ref(elements_, N - 1)
+             : detail::array_traits<T, N>::ref(elements_, 0);
   }
   constexpr const T& back() const {
-    return elements_[size() - 1];
+    return N ? detail::array_traits<T, N>::ref(elements_, N - 1)
+             : detail::array_traits<T, N>::ref(elements_, 0);
   }
 
   constexpr T* data() noexcept {
-    return elements_;
+    return detail::array_traits<T, N>::ptr(elements_);
   }
   constexpr const T* data() const noexcept {
-    return elements_;
+    return detail::array_traits<T, N>::ptr(elements_);
   }
 
   constexpr iterator begin() noexcept {
@@ -84,10 +111,10 @@ class array {
   }
 
   constexpr iterator end() noexcept {
-    return data() + size();
+    return data() + N;
   }
   constexpr const_iterator end() const noexcept {
-    return data() + size();
+    return data() + N;
   }
 
   constexpr bool empty() const noexcept {
@@ -103,9 +130,6 @@ class array {
       elements_[i] = value;
     }
   }
-
- private:
-  T elements_[N];
 };
 
 template <class Array>
@@ -126,5 +150,10 @@ struct array_size<array<T, N>>
 
 template <class T>
 inline constexpr size_t array_size_v = array_size<std::decay_t<T>>::value;
+
+template <class T, class... U>
+array(T, U...)
+  -> array<std::enable_if_t<(std::is_same_v<T, U> && ...), T>,
+           1 + sizeof...(U)>;
 
 } // namespace crystal

@@ -170,6 +170,11 @@ class untyped_tuple {
 
   void reset();
 
+  void reset(const meta& meta) {
+    meta_ = meta;
+    reset();
+  }
+
   void assign(const untyped_tuple& other);
 
   template <class T>
@@ -213,18 +218,7 @@ class untyped_tuple {
     set_buffer(p);
   }
 
-  void set_buffer(void* buffer) {
-    uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
-    if (offset_) {
-      uint8_t* old = offset_.get();
-      offset_ = p;
-      if (!getMask(old)) {
-        std::free(old);
-      }
-    } else {
-      offset_ = p;
-    }
-  }
+  void set_buffer(void* buffer);
 
   bool with_buffer_mask() const noexcept {
     return offset_ && getMask(offset_);
@@ -237,6 +231,8 @@ class untyped_tuple {
 
  private:
   OffsetPtr<uint8_t> offset_;
+
+ public:
   meta meta_;
 };
 

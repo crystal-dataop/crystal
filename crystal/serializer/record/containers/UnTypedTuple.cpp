@@ -97,6 +97,17 @@ void init<untyped_tuple>(
 }
 
 template <class T>
+void release(uint8_t* dst, const untyped_tuple::meta::element& em) {
+  if (em.count == 0) {
+    reinterpret_cast<vector<T>*>(dst)->~vector<T>();
+  } else {
+    for (uint32_t i = 0; i < em.count; ++i) {
+      (reinterpret_cast<T*>(dst) + i)->~T();
+    }
+  }
+}
+
+template <class T>
 void copy(uint8_t* dst, uint8_t* src, const untyped_tuple::meta::element& em) {
   if (em.count == 0) {
     *reinterpret_cast<vector<T>*>(dst) = *reinterpret_cast<vector<T>*>(src);
@@ -277,6 +288,43 @@ size_t untyped_tuple::element_buffer_size_to_update(size_t i) const noexcept {
     }
   }
   return 0;
+}
+
+void untyped_tuple::set_buffer(void* buffer) {
+  uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
+  if (offset_) {
+    uint8_t* old = offset_.get();
+    offset_ = p;
+    for (auto& em : meta_) {
+      uint8_t* e = old + em.offset;
+      switch (em.type) {
+#define CASE(dt, t) \
+        case DataType::dt: release<t>(e, em); break;
+
+        CASE(BOOL, bool)
+        CASE(INT8, int8_t)
+        CASE(INT16, int16_t)
+        CASE(INT32, int32_t)
+        CASE(INT64, int64_t)
+        CASE(UINT8, uint8_t)
+        CASE(UINT16, uint16_t)
+        CASE(UINT32, uint32_t)
+        CASE(UINT64, uint64_t)
+        CASE(FLOAT, float)
+        CASE(DOUBLE, double)
+        CASE(STRING, string)
+        CASE(TUPLE, untyped_tuple)
+        default: break;
+
+#undef CASE
+      }
+    }
+    if (!getMask(old)) {
+      std::free(old);
+    }
+  } else {
+    offset_ = p;
+  }
 }
 
 } // namespace crystal
