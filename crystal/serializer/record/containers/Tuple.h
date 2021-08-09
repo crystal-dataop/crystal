@@ -25,42 +25,8 @@
 
 namespace crystal {
 
-template <size_t N, class Head, class... Tail>
-struct tuple_impl : public tuple_impl<N + sizeof(Head), Tail...> {
-  using meta_type = untyped_tuple::meta;
-
-  tuple_impl() = default;
-  tuple_impl(const meta_type& meta, Head&& first, Tail&&... tail)
-      : tuple_impl<N + sizeof(Head), Tail...>{meta, std::forward<Tail>(tail)...}
-  {
-    head() = std::forward<Head>(first);
-  }
-
-  Head& head() {
-    return *reinterpret_cast<Head*>(
-        &reinterpret_cast<untyped_tuple*>(this)->get<uint8_t>(0) + N);
-  }
-};
-
-template <size_t N, class Head>
-struct tuple_impl<N, Head> {
-  using meta_type = untyped_tuple::meta;
-
-  tuple_impl() = default;
-  explicit tuple_impl(const meta_type& meta, Head&& first) {
-    untyped_tuple_.reset(meta);
-    head() = std::forward<Head>(first);
-  }
-
-  Head& head() {
-    return *reinterpret_cast<Head*>(&untyped_tuple_.get<uint8_t>(0) + N);
-  }
-
-  untyped_tuple untyped_tuple_;
-};
-
 template <class... Args>
-using tuple = tuple_impl<0, Args...>;
+struct tuple;
 
 template <class Tuple>
 struct is_tuple : std::false_type {};
@@ -70,6 +36,35 @@ struct is_tuple<tuple<T...>> : std::true_type {};
 
 template <class T>
 inline constexpr bool is_tuple_v = is_tuple<T>::value;
+
+template <class T>
+std::enable_if_t<is_tuple_v<T>, untyped_tuple::meta>
+generateTupleMeta();
+
+template <class... Args>
+struct tuple {
+  tuple() = default;
+  tuple(Args&&... args) {
+    untyped_tuple_.reset(generateTupleMeta<tuple<Args...>>());
+    set<0>(std::forward<Args>(args)...);
+  }
+
+  untyped_tuple untyped_tuple_;
+
+ private:
+  template <size_t I, class Head,
+            std::enable_if_t<I == sizeof...(Args) - 1, int> = 0>
+  void set(Head&& head) {
+    untyped_tuple_.get<Head>(I) = std::forward<Head>(head);
+  }
+
+  template <size_t I, class Head, class... Tail,
+            std::enable_if_t<I != sizeof...(Args) - 1, int> = 0>
+  void set(Head&& head, Tail&&... tail) {
+    untyped_tuple_.get<Head>(I) = std::forward<Head>(head);
+    set<I + 1>(std::forward<Tail>(tail)...);
+  }
+};
 
 template <class... T>
 struct DataTypeTraits<tuple<T...>> {
@@ -92,51 +87,9 @@ template <class T>
 using unwrap_decay_t =
     typename unwrap_refwrapper<typename std::decay<T>::type>::type;
 
-template <class T>
-std::enable_if_t<is_tuple_v<T>, untyped_tuple::meta>
-generateTupleMeta();
-
 template <class... Args>
 constexpr tuple<unwrap_decay_t<Args>...> make_tuple(Args&&... args) {
-  return tuple<unwrap_decay_t<Args>...>(
-      generateTupleMeta<tuple<unwrap_decay_t<Args>...>>(),
-      std::forward<Args>(args)...);
-}
-
-template <size_t I, size_t N, class Head, class... Tail,
-          std::enable_if_t<I == 0U, int> = 0>
-Head& get(tuple_impl<N, Head, Tail...>& t) {
-  return t.head();
-}
-
-template <size_t I, size_t N, class Head, class... Tail,
-          std::enable_if_t<I != 0U, int> = 0>
-auto& get(tuple_impl<N, Head, Tail...>& t) {
-  return get<I - 1U, N + sizeof(Head), Tail...>(t);
-}
-
-template <size_t I, size_t N, class Head, class... Tail,
-          std::enable_if_t<I == 0U, int> = 0>
-Head const& get(tuple_impl<N, Head, Tail...> const& t) {
-  return t.head();
-}
-
-template <size_t I, size_t N, class Head, class... Tail,
-          std::enable_if_t<I != 0U, int> = 0>
-auto const& get(tuple_impl<N, Head, Tail...> const& t) {
-  return get<I - 1U, N + sizeof(Head), Tail...>(t);
-}
-
-template <size_t I, size_t N, class Head, class... Tail,
-          std::enable_if_t<I == 0U, int> = 0>
-Head&& get(tuple_impl<N, Head, Tail...>&& t) {
-  return t.head();
-}
-
-template <size_t I, size_t N, class Head, class... Tail,
-          std::enable_if_t<I != 0U, int> = 0>
-auto&& get(tuple_impl<N, Head, Tail...>&& t) {
-  return get<I - 1U, N + sizeof(Head), Tail...>(t);
+  return tuple<unwrap_decay_t<Args>...>(std::forward<Args>(args)...);
 }
 
 template <class T>
@@ -160,6 +113,24 @@ template <class Head, class... Tail>
 struct tuple_element<0, tuple<Head, Tail...>> {
   using type = Head;
 };
+
+template <size_t I, class Tuple,
+          class T = typename tuple_element<I, Tuple>::type>
+T& get(Tuple& t) {
+  return t.untyped_tuple_.template get<T>(I);
+}
+
+template <size_t I, class Tuple,
+          class T = typename tuple_element<I, Tuple>::type>
+T const& get(Tuple const& t) {
+  return t.untyped_tuple_.template get<T>(I);
+}
+
+template <size_t I, class Tuple,
+          class T = typename tuple_element<I, Tuple>::type>
+T&& get(Tuple&& t) {
+  return t.untyped_tuple_.template get<T>(I);
+}
 
 template <class F, class Tuple, size_t... I>
 constexpr decltype(auto) apply_impl(
