@@ -17,10 +17,10 @@
 #include <gtest/gtest.h>
 #include <cstdlib>
 
-#include "crystal/serializer/record/containers/Serialization.h"
-#include "crystal/serializer/record/containers/SerializationInUpdating.h"
-#include "crystal/serializer/record/containers/UnTypedTuple.h"
-#include "crystal/serializer/record/containers/TupleMetaGenerator.h"
+#include "crystal/record/containers/Serialization.h"
+#include "crystal/record/containers/SerializationInUpdating.h"
+#include "crystal/record/containers/TupleMetaGenerator.h"
+#include "crystal/record/containers/UnTypedTuple.h"
 
 using namespace crystal;
 

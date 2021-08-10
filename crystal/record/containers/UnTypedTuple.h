@@ -19,9 +19,9 @@
 #include <cstdlib>
 #include <type_traits>
 
-#include "crystal/serializer/record/AllocMask.h"
-#include "crystal/serializer/record/OffsetPtr.h"
-#include "crystal/serializer/record/containers/Vector.h"
+#include "crystal/record/AllocMask.h"
+#include "crystal/record/OffsetPtr.h"
+#include "crystal/record/containers/Vector.h"
 #include "crystal/type/DataType.h"
 
 namespace crystal {

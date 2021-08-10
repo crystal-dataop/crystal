@@ -16,9 +16,9 @@
 
 #include <gtest/gtest.h>
 
-#include "crystal/serializer/record/containers/Serialization.h"
-#include "crystal/serializer/record/containers/SerializationInUpdating.h"
-#include "crystal/serializer/record/containers/Vector.h"
+#include "crystal/record/containers/Serialization.h"
+#include "crystal/record/containers/SerializationInUpdating.h"
+#include "crystal/record/containers/Vector.h"
 
 using namespace crystal;
 

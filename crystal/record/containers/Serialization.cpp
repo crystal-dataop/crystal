@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "crystal/serializer/record/containers/Serialization.h"
+#include "crystal/record/containers/Serialization.h"
 
 namespace crystal {
 

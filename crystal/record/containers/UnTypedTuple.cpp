@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-#include "crystal/serializer/record/containers/Serialization.h"
-#include "crystal/serializer/record/containers/SerializationInUpdating.h"
-#include "crystal/serializer/record/containers/String.h"
-#include "crystal/serializer/record/containers/UnTypedTuple.h"
+#include "crystal/record/containers/Serialization.h"
+#include "crystal/record/containers/SerializationInUpdating.h"
+#include "crystal/record/containers/String.h"
+#include "crystal/record/containers/UnTypedTuple.h"
 
 namespace crystal {
 

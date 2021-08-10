@@ -21,8 +21,8 @@
 #include <memory>
 #include <stdexcept>
 
-#include "crystal/serializer/record/AllocMask.h"
-#include "crystal/serializer/record/OffsetPtr.h"
+#include "crystal/record/AllocMask.h"
+#include "crystal/record/OffsetPtr.h"
 
 namespace crystal {
 

@@ -20,10 +20,10 @@
 
 #include "crystal/foundation/AtomicLinkedList.h"
 #include "crystal/foundation/Singleton.h"
-#include "crystal/serializer/record/containers/Array.h"
-#include "crystal/serializer/record/containers/String.h"
-#include "crystal/serializer/record/containers/Tuple.h"
-#include "crystal/serializer/record/containers/Vector.h"
+#include "crystal/record/containers/Array.h"
+#include "crystal/record/containers/String.h"
+#include "crystal/record/containers/Tuple.h"
+#include "crystal/record/containers/Vector.h"
 
 namespace crystal {
 

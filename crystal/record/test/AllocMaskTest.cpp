@@ -16,7 +16,7 @@
 
 #include <gtest/gtest.h>
 
-#include "crystal/serializer/record/AllocMask.h"
+#include "crystal/record/AllocMask.h"
 
 using namespace crystal;
 

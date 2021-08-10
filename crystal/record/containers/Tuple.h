@@ -20,8 +20,8 @@
 #include <type_traits>
 #include <utility>
 
-#include "crystal/serializer/record/OffsetPtr.h"
-#include "crystal/serializer/record/containers/UnTypedTuple.h"
+#include "crystal/record/OffsetPtr.h"
+#include "crystal/record/containers/UnTypedTuple.h"
 
 namespace crystal {
 

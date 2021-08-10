@@ -16,8 +16,8 @@
 
 #include <gtest/gtest.h>
 
-#include "crystal/serializer/record/containers/Tuple.h"
-#include "crystal/serializer/record/containers/TupleMetaGenerator.h"
+#include "crystal/record/containers/Tuple.h"
+#include "crystal/record/containers/TupleMetaGenerator.h"
 
 using namespace crystal;
 

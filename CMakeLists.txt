@@ -98,9 +98,10 @@ build_directory(crystal/operator)
 build_directory(crystal/operator/generic)
 build_directory(crystal/operator/search)
 build_directory(crystal/query)
+build_directory(crystal/record)
+build_directory(crystal/record/containers)
 build_directory(crystal/serializer)
 build_directory(crystal/serializer/record)
-build_directory(crystal/serializer/record/containers)
 build_directory(crystal/storage/builder)
 build_directory(crystal/storage/index)
 build_directory(crystal/storage/index/bitmap)
@@ -120,9 +121,9 @@ add_library(crystal
   $<TARGET_OBJECTS:crystal_operator_generic>
   $<TARGET_OBJECTS:crystal_operator_search>
   $<TARGET_OBJECTS:crystal_query>
+  $<TARGET_OBJECTS:crystal_record_containers>
   $<TARGET_OBJECTS:crystal_serializer>
   $<TARGET_OBJECTS:crystal_serializer_record>
-  $<TARGET_OBJECTS:crystal_serializer_record_containers>
   $<TARGET_OBJECTS:crystal_storage_builder>
   $<TARGET_OBJECTS:crystal_storage_index>
   $<TARGET_OBJECTS:crystal_storage_index_bitmap>
@@ -152,9 +153,10 @@ if(GTEST_FOUND)
   add_subdirectory(crystal/operator/test)
   add_subdirectory(crystal/operator/generic/test)
   add_subdirectory(crystal/operator/search/test)
+  add_subdirectory(crystal/record/test)
+  add_subdirectory(crystal/record/containers/test)
   add_subdirectory(crystal/serializer/test)
   add_subdirectory(crystal/serializer/record/test)
-  add_subdirectory(crystal/serializer/record/containers/test)
   add_subdirectory(crystal/storage/builder/test)
   add_subdirectory(crystal/storage/index/test)
   add_subdirectory(crystal/storage/index/bitmap/test)

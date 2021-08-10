@@ -21,11 +21,11 @@
 #include <memory>
 #include <type_traits>
 
-#include "crystal/serializer/record/containers/Array.h"
-#include "crystal/serializer/record/containers/Pair.h"
-#include "crystal/serializer/record/containers/String.h"
-#include "crystal/serializer/record/containers/UnTypedTuple.h"
-#include "crystal/serializer/record/containers/Vector.h"
+#include "crystal/record/containers/Array.h"
+#include "crystal/record/containers/Pair.h"
+#include "crystal/record/containers/String.h"
+#include "crystal/record/containers/UnTypedTuple.h"
+#include "crystal/record/containers/Vector.h"
 
 namespace crystal {
 
