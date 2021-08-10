@@ -31,11 +31,6 @@ class TupleTest : public ::testing::Test {
         array<int, 10>,
         vector<string>,
         tuple<int, string>>>();
-
-  void TearDown() override {
-    meta.release();
-  }
-
 };
 
 TEST_F(TupleTest, get_and_set) {
@@ -113,37 +108,28 @@ TEST_F(TupleTest, get_and_set2) {
 }
 
 TEST_F(TupleTest, make_tuple) {
-  untyped_tuple::meta umeta;
-  untyped_tuple::meta tmeta;
-  {
-    auto u = crystal::make_tuple(
-        10,
-        string("tuplestring"));
-    auto t = crystal::make_tuple(
-        100,
-        string("string"),
-        array<int, 10>({0,1,2,3,4,5,6,7,8,9}),
-        vector<string>({"a", "ab", "abc"}),
-        std::move(u));
+  auto u = crystal::make_tuple(
+      10,
+      string("tuplestring"));
+  auto t = crystal::make_tuple(
+      100,
+      string("string"),
+      array<int, 10>({0,1,2,3,4,5,6,7,8,9}),
+      vector<string>({"a", "ab", "abc"}),
+      std::move(u));
 
-    EXPECT_EQ(100, get<0>(t));
-    EXPECT_STREQ("string", get<1>(t).str().c_str());
-    auto& b = get<2>(t);
-    int k = 0;
-    for (auto& i : b) {
-      EXPECT_EQ(k++, i);
-    }
-    EXPECT_EQ(3, get<3>(t).size());
-    EXPECT_STREQ("a", get<3>(t)[0].str().c_str());
-    EXPECT_STREQ("ab", get<3>(t)[1].str().c_str());
-    EXPECT_STREQ("abc", get<3>(t)[2].str().c_str());
-    auto& v = get<4>(t);
-    EXPECT_EQ(10, get<0>(v));
-    EXPECT_STREQ("tuplestring", get<1>(v).str().c_str());
-
-    umeta = u.untyped_tuple_.meta_;
-    tmeta = t.untyped_tuple_.meta_;
+  EXPECT_EQ(100, get<0>(t));
+  EXPECT_STREQ("string", get<1>(t).str().c_str());
+  auto& b = get<2>(t);
+  int k = 0;
+  for (auto& i : b) {
+    EXPECT_EQ(k++, i);
   }
-  umeta.release();
-  tmeta.release();
+  EXPECT_EQ(3, get<3>(t).size());
+  EXPECT_STREQ("a", get<3>(t)[0].str().c_str());
+  EXPECT_STREQ("ab", get<3>(t)[1].str().c_str());
+  EXPECT_STREQ("abc", get<3>(t)[2].str().c_str());
+  auto& v = get<4>(t);
+  EXPECT_EQ(10, get<0>(v));
+  EXPECT_STREQ("tuplestring", get<1>(v).str().c_str());
 }

@@ -54,10 +54,11 @@ void serializeInUpdating(untyped_tuple::meta& value, void* buffer) {
         n = bufferSizeToUpdate(subfrom);
         serializeInUpdating(subfrom, p);
         subto.offset = subfrom.offset;
+        subfrom.offset = nullptr;
         p += n;
       }
     }
-    value.set_buffer(buf);
+    value.offset = buf;
   } else {
     uint8_t* p = reinterpret_cast<uint8_t*>(buffer);
     for (size_t i = 0; i < value.size(); ++i) {

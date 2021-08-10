@@ -145,7 +145,7 @@ void untyped_tuple::reset() {
       }
     }
   } else {
-    write(meta_.fixed_size(), [&](uint8_t* p) {
+    write(fixed_size(), [&](uint8_t* p) {
       for (auto& em : meta_) {
         uint8_t* e = p + em.offset;
         switch (em.type) {
@@ -202,7 +202,7 @@ void untyped_tuple::assign(const untyped_tuple& other) {
       }
     }
   } else {
-    write(meta_.fixed_size(), [&](uint8_t* p) {
+    write(fixed_size(), [&](uint8_t* p) {
       for (auto& em : meta_) {
         uint8_t* e = p + em.offset;
         uint8_t* o = other.offset_ + em.offset;

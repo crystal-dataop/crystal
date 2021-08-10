@@ -55,7 +55,13 @@ class untyped_tuple {
     OffsetPtr<head> offset;
 
     void release() {
-      set_buffer(nullptr);
+      if (offset) {
+        head* old = offset.get();
+        offset = nullptr;
+        if (!old->mask) {
+          std::free(old);
+        }
+      }
     }
 
     void reserve(size_t n) {
@@ -70,7 +76,10 @@ class untyped_tuple {
       p->mask = 0;
       p->elem = 0;
       p->size = 1;
-      set_buffer(p);
+      if (offset) {
+        throw std::runtime_error("meta::reserve");
+      }
+      offset = p;
     }
 
     size_t size() const noexcept {
@@ -110,25 +119,6 @@ class untyped_tuple {
             };
         offset->elem++;
         offset->size += count == 0 ? sizeof(vector<T>) : sizeof(T) * count;
-      }
-    }
-
-    void set_buffer(void* buffer) {
-      head* p = reinterpret_cast<head*>(buffer);
-      if (offset) {
-        head* old = offset.get();
-        auto b = begin();
-        auto e = end();
-        offset = p;
-        while (b != e) {
-          meta{b->submeta}.release();
-          ++b;
-        }
-        if (!old->mask) {
-          std::free(old);
-        }
-      } else {
-        offset = p;
       }
     }
 

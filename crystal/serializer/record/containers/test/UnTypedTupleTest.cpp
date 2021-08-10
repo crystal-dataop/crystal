@@ -34,11 +34,6 @@ class UnTypedTupleTest : public ::testing::Test {
         array<int, 10>,
         vector<string>,
         tuple<int, string>>>();
-
-  void TearDown() override {
-    meta.release();
-  }
-
 };
 
 TEST_F(UnTypedTupleTest, set_and_get) {
@@ -142,7 +137,7 @@ TEST_F(UnTypedTupleTest, serialize) {
 
     EXPECT_EQ(100, r.get<int32_t>(0));
     EXPECT_STREQ("string", r.get<string>(1).str().c_str());
-    auto& b = t.get<array<int, 10>>(2);
+    auto& b = r.get<array<int, 10>>(2);
     for (auto& i : b) {
       EXPECT_EQ(100, i);
     }
@@ -150,7 +145,7 @@ TEST_F(UnTypedTupleTest, serialize) {
     EXPECT_STREQ("a", r.get<vector<string>>(3)[0].str().c_str());
     EXPECT_STREQ("ab", r.get<vector<string>>(3)[1].str().c_str());
     EXPECT_STREQ("abc", r.get<vector<string>>(3)[2].str().c_str());
-    auto& v = t.get<untyped_tuple>(4);
+    auto& v = r.get<untyped_tuple>(4);
     EXPECT_EQ(10, v.get<int>(0));
     EXPECT_STREQ("tuplestring", v.get<string>(1).str().c_str());
   }

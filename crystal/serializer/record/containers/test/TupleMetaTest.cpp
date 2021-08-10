@@ -35,10 +35,6 @@ class TupleMetaTest : public ::testing::Test {
         vector<string>,
         tuple<int, string>>>();
 
-  void TearDown() override {
-    meta.release();
-  }
-
   void Expect(untyped_tuple::meta& m) {
     EXPECT_EQ(5, m.size());
     EXPECT_EQ(128, m.fixed_size());

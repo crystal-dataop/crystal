@@ -76,6 +76,7 @@ void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {
           vt& subfrom = *reinterpret_cast<vt*>(old + em.offset);    \
           vt& subto = *reinterpret_cast<vt*>(buf + em.offset);      \
           size_t n = bufferSize(subfrom);                           \
+          new (&subto) vt();                                        \
           serialize(subfrom, subto, p);                             \
           p += n;                                                   \
         } else {                                                    \
@@ -83,6 +84,7 @@ void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {
             t& subfrom = reinterpret_cast<t*>(old + em.offset)[k];  \
             t& subto = reinterpret_cast<t*>(buf + em.offset)[k];    \
             size_t n = bufferSize(subfrom);                         \
+            new (&subto) t();                                       \
             serialize(subfrom, subto, p);                           \
             p += n;                                                 \
           }                                                         \
@@ -108,8 +110,8 @@ void serialize(const untyped_tuple& from, untyped_tuple& to, void* buffer) {
 #undef CASE
     }
   }
+  to.set_buffer(buf);
   to.meta_ = from.meta_;
-  to.offset_ = buf;
 }
 
 } // namespace crystal

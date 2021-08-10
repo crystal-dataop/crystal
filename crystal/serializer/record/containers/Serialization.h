@@ -108,10 +108,11 @@ void serialize(const vector<T>& from, vector<T>& to, void* buffer) {
     T& subfrom = reinterpret_cast<T*>(old + bytes)[i];
     T& subto = reinterpret_cast<T*>(buf + bytes)[i];
     size_t n = bufferSize(subfrom);
+    new (&subto) T();
     serialize(subfrom, subto, p);
     p += n;
   }
-  to.offset_ = buf;
+  to.set_buffer(buf);
 }
 
 void serialize(const untyped_tuple::meta& from,

@@ -18,6 +18,8 @@
 
 #include <type_traits>
 
+#include "crystal/foundation/AtomicLinkedList.h"
+#include "crystal/foundation/Singleton.h"
 #include "crystal/serializer/record/containers/Array.h"
 #include "crystal/serializer/record/containers/String.h"
 #include "crystal/serializer/record/containers/Tuple.h"
@@ -70,12 +72,33 @@ void addElementType(untyped_tuple::meta& meta) {
   addElementType<I + 1, T>(meta);
 }
 
+struct TupleMetaWrapper {
+  untyped_tuple::meta meta;
+
+  TupleMetaWrapper(untyped_tuple::meta meta) : meta(meta) {}
+  TupleMetaWrapper(const TupleMetaWrapper& other) = delete;
+  TupleMetaWrapper(TupleMetaWrapper&& other) {
+    std::swap(meta.offset, other.meta.offset);
+  }
+  TupleMetaWrapper& operator=(const TupleMetaWrapper& other) = delete;
+  TupleMetaWrapper& operator=(TupleMetaWrapper&& other) {
+    std::swap(meta.offset, other.meta.offset);
+    return *this;
+  }
+
+  ~TupleMetaWrapper() {
+    meta.release();
+  }
+};
+
 template <class T>
 std::enable_if_t<is_tuple_v<T>, untyped_tuple::meta>
 generateTupleMeta() {
   untyped_tuple::meta meta;
   meta.reserve(tuple_size_v<T>);
   addElementType<0, T>(meta);
+  Singleton<AtomicLinkedList<TupleMetaWrapper>>::get()
+    .insertHead(TupleMetaWrapper{meta});
   return meta;
 }
 
