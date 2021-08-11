@@ -42,7 +42,7 @@ TEST_F(RecordTest, config) {
   EXPECT_EQ(DataType::UINT64, config.fieldConfigs[3].type());
   EXPECT_STREQ("restaurant", config.fieldConfigs[3].related().c_str());
 
-  untyped_tuple::meta meta = config.buildRecordMeta();
+  untyped_tuple::meta meta = config.buildRecordMeta("*");
   EXPECT_EQ(4, meta.size());
   EXPECT_EQ(DataType::UINT64, meta[0].type);
   EXPECT_EQ(1, meta[0].count);

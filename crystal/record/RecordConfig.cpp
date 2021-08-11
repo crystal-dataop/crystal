@@ -182,8 +182,21 @@ untyped_tuple::meta buildTupleMeta(const std::vector<FieldConfig>& configs) {
   return meta;
 }
 
-untyped_tuple::meta RecordConfig::buildRecordMeta(bool addId) {
-  std::vector<FieldConfig> configs = fieldConfigs;
+untyped_tuple::meta RecordConfig::buildRecordMeta(
+    const std::string& fields, bool addId) {
+  std::vector<FieldConfig> configs;
+  if (fields == "*") {
+    configs = fieldConfigs;
+  } else {
+    std::vector<std::string> fieldVec;
+    split(',', fields, fieldVec);
+    for (auto& field : fieldVec) {
+      auto it = fieldIndex.find(field);
+      if (it != fieldIndex.end()) {
+        configs.push_back(fieldConfigs[it->second]);
+      }
+    }
+  }
   if (addId) {
     FieldConfig config;
     config.parse(dynamic::object("name", "__id")("type", "uint64"));
