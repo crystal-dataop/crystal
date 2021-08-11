@@ -2,4 +2,5 @@
 
 test_sources(
   AllocMaskTest.cpp
+  RecordTest.cpp
 )

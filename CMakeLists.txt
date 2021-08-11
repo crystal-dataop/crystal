@@ -87,50 +87,51 @@ configure_file(
 
 # Work on all sub directories
 build_directory(crystal _base)
-build_directory(crystal/bridge/kafka)
-build_directory(crystal/dataframe)
+#build_directory(crystal/bridge/kafka)
+#build_directory(crystal/dataframe)
 build_directory(crystal/foundation)
 build_directory(crystal/foundation/http)
-build_directory(crystal/graph)
-build_directory(crystal/math)
+#build_directory(crystal/graph)
+#build_directory(crystal/math)
 build_directory(crystal/memory)
-build_directory(crystal/operator)
-build_directory(crystal/operator/generic)
-build_directory(crystal/operator/search)
-build_directory(crystal/query)
+#build_directory(crystal/operator)
+#build_directory(crystal/operator/generic)
+#build_directory(crystal/operator/search)
+#build_directory(crystal/query)
 build_directory(crystal/record)
 build_directory(crystal/record/containers)
-build_directory(crystal/serializer)
-build_directory(crystal/serializer/record)
-build_directory(crystal/storage/builder)
-build_directory(crystal/storage/index)
-build_directory(crystal/storage/index/bitmap)
-build_directory(crystal/storage/index/vector)
-build_directory(crystal/storage/kv)
-build_directory(crystal/storage/table)
-build_directory(crystal/strategy)
+#build_directory(crystal/serializer)
+#build_directory(crystal/serializer/record)
+#build_directory(crystal/storage/builder)
+#build_directory(crystal/storage/index)
+#build_directory(crystal/storage/index/bitmap)
+#build_directory(crystal/storage/index/vector)
+#build_directory(crystal/storage/kv)
+#build_directory(crystal/storage/table)
+#build_directory(crystal/strategy)
 build_directory(crystal/type)
 
 add_library(crystal
-  $<TARGET_OBJECTS:crystal_bridge_kafka>
-  $<TARGET_OBJECTS:crystal_dataframe>
+#  $<TARGET_OBJECTS:crystal_bridge_kafka>
+#  $<TARGET_OBJECTS:crystal_dataframe>
   $<TARGET_OBJECTS:crystal_foundation>
   $<TARGET_OBJECTS:crystal_foundation_http>
-  $<TARGET_OBJECTS:crystal_graph>
+#  $<TARGET_OBJECTS:crystal_graph>
   $<TARGET_OBJECTS:crystal_memory>
-  $<TARGET_OBJECTS:crystal_operator_generic>
-  $<TARGET_OBJECTS:crystal_operator_search>
-  $<TARGET_OBJECTS:crystal_query>
+#  $<TARGET_OBJECTS:crystal_operator_generic>
+#  $<TARGET_OBJECTS:crystal_operator_search>
+#  $<TARGET_OBJECTS:crystal_query>
+  $<TARGET_OBJECTS:crystal_record>
   $<TARGET_OBJECTS:crystal_record_containers>
-  $<TARGET_OBJECTS:crystal_serializer>
-  $<TARGET_OBJECTS:crystal_serializer_record>
-  $<TARGET_OBJECTS:crystal_storage_builder>
-  $<TARGET_OBJECTS:crystal_storage_index>
-  $<TARGET_OBJECTS:crystal_storage_index_bitmap>
-  $<TARGET_OBJECTS:crystal_storage_index_vector>
-  $<TARGET_OBJECTS:crystal_storage_kv>
-  $<TARGET_OBJECTS:crystal_storage_table>
-  $<TARGET_OBJECTS:crystal_strategy>
+#  $<TARGET_OBJECTS:crystal_serializer>
+#  $<TARGET_OBJECTS:crystal_serializer_record>
+#  $<TARGET_OBJECTS:crystal_storage_builder>
+#  $<TARGET_OBJECTS:crystal_storage_index>
+#  $<TARGET_OBJECTS:crystal_storage_index_bitmap>
+#  $<TARGET_OBJECTS:crystal_storage_index_vector>
+#  $<TARGET_OBJECTS:crystal_storage_kv>
+#  $<TARGET_OBJECTS:crystal_storage_table>
+#  $<TARGET_OBJECTS:crystal_strategy>
   $<TARGET_OBJECTS:crystal_type>
 )
 
@@ -140,28 +141,28 @@ install(TARGETS crystal
 )
 
 # Binary
-add_subdirectory(crystal/foundation/http/examples)
-add_subdirectory(crystal/service)
-add_subdirectory(crystal/tools)
+#add_subdirectory(crystal/foundation/http/examples)
+#add_subdirectory(crystal/service)
+#add_subdirectory(crystal/tools)
 
 # Test
 if(GTEST_FOUND)
   enable_testing()
   include_directories(${GTEST_INCLUDE_DIR})
-  add_subdirectory(crystal/dataframe/test)
+#  add_subdirectory(crystal/dataframe/test)
   add_subdirectory(crystal/memory/test)
-  add_subdirectory(crystal/operator/test)
-  add_subdirectory(crystal/operator/generic/test)
-  add_subdirectory(crystal/operator/search/test)
+#  add_subdirectory(crystal/operator/test)
+#  add_subdirectory(crystal/operator/generic/test)
+#  add_subdirectory(crystal/operator/search/test)
   add_subdirectory(crystal/record/test)
   add_subdirectory(crystal/record/containers/test)
-  add_subdirectory(crystal/serializer/test)
-  add_subdirectory(crystal/serializer/record/test)
-  add_subdirectory(crystal/storage/builder/test)
-  add_subdirectory(crystal/storage/index/test)
-  add_subdirectory(crystal/storage/index/bitmap/test)
-  add_subdirectory(crystal/storage/kv/test)
-  add_subdirectory(crystal/storage/table/test)
+#  add_subdirectory(crystal/serializer/test)
+#  add_subdirectory(crystal/serializer/record/test)
+#  add_subdirectory(crystal/storage/builder/test)
+#  add_subdirectory(crystal/storage/index/test)
+#  add_subdirectory(crystal/storage/index/bitmap/test)
+#  add_subdirectory(crystal/storage/kv/test)
+#  add_subdirectory(crystal/storage/table/test)
   add_subdirectory(crystal/type/test)
 endif()
 

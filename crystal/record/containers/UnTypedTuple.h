@@ -37,6 +37,13 @@ struct is_untyped_tuple<untyped_tuple> : std::true_type {};
 template <class T>
 inline constexpr bool is_untyped_tuple_v = is_untyped_tuple<T>::value;
 
+template <>
+struct DataTypeTraits<untyped_tuple> {
+  enum {
+    value = static_cast<int>(DataType::TUPLE)
+  };
+};
+
 class untyped_tuple {
  public:
   struct meta {
