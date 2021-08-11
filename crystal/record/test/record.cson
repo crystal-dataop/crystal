@@ -3,7 +3,7 @@
     { name="menuId", type="uint64" },
     { name="name", type="string" },
     {
-      name="foods", type="tuple", count=0, meta=[
+      name="food", type="tuple", count=0, meta=[
         { name="foodId", type="uint64" },
         { name="name", type="string" },
         { name="price", type="float" },

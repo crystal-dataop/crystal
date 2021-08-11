@@ -16,13 +16,16 @@
 
 #pragma once
 
-#include "crystal/record/containers/UnTypedTuple.h"
+#include "crystal/record/containers/Array.h"
+#include "crystal/record/containers/String.h"
+#include "crystal/record/containers/Tuple.h"
+#include "crystal/record/containers/Vector.h"
 
 namespace crystal {
 
 class RecordBase {
  public:
-  RecordBase(const meta& meta, void* buffer)
+  RecordBase(const untyped_tuple::meta& meta, void* buffer)
       : untyped_tuple_(meta, buffer) {}
 
   void setBuffer(void* buffer) {

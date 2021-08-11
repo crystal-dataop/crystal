@@ -143,7 +143,7 @@ install(TARGETS crystal
 # Binary
 #add_subdirectory(crystal/foundation/http/examples)
 #add_subdirectory(crystal/service)
-#add_subdirectory(crystal/tools)
+add_subdirectory(crystal/tools)
 
 # Test
 if(GTEST_FOUND)
