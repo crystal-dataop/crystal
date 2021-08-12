@@ -79,6 +79,9 @@ class string {
   string& operator=(string&& other) noexcept {
     return assign(other);
   }
+  string& operator=(const std::string& other) {
+    return assign(other);
+  }
   string& operator=(const char* s) {
     return assign(s);
   }
@@ -91,14 +94,11 @@ class string {
     return *this;
   }
   string& assign(const string& str) {
-    size_t n = str.size();
-    write(n, [&](char* p, size_t n) { std::memcpy(p, str.data(), n); });
-    return *this;
+    return assign(str.data(), str.size());
   }
   string& assign(const string& str, size_t pos, size_t n = npos) {
     if (pos <= str.size()) {
-      n = std::min(n, str.size() - pos);
-      write(n, [&](char* p, size_t n) { std::memcpy(p, str.data() + pos, n); });
+      return assign(str.data() + pos, std::min(n, str.size() - pos));
     }
     return *this;
   }
@@ -106,12 +106,13 @@ class string {
     std::swap(offset_, str.offset_);
     return *this;
   }
-  string& assign(const char* s, size_t n) {
-    write(n, [&](char* p, size_t n) { std::memcpy(p, s, n); });
-    return *this;
+  string& assign(const std::string& str) {
+    return assign(str.data(), str.size());
   }
   string& assign(const char* s) {
-    size_t n = std::strlen(s);
+    return assign(s, std::strlen(s));
+  }
+  string& assign(const char* s, size_t n) {
     write(n, [&](char* p, size_t n) { std::memcpy(p, s, n); });
     return *this;
   }
