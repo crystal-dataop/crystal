@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include <filesystem>
 #include <gflags/gflags.h>
 
 #include "crystal/foundation/File.h"
@@ -22,6 +23,7 @@
 #include "crystal/record/RecordGenerator.h"
 
 DEFINE_string(conf, "", "crystal conf");
+DEFINE_string(outputdir, "", "output directory");
 DEFINE_string(fields, "*", "fields");
 DEFINE_bool(addid, false, "add __id");
 
@@ -32,18 +34,34 @@ int main(int argc, char** argv) {
       "Usage: " + getProcessName() + " -conf CONF -fields FIELDS");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
+  if (FLAGS_conf.empty()) {
+    CRYSTAL_LOG(ERROR) << "conf required";
+    return -1;
+  }
   std::string conf;
   if (!readFile(FLAGS_conf.c_str(), conf)) {
     CRYSTAL_LOG(ERROR) << "read file '" << FLAGS_conf << "' failed";
-    return 1;
+    return -1;
   }
   RecordConfig config = parseRecordConfig(parseCson(conf));
   if (config.fieldConfigs.empty()) {
-    return 1;
+    return -1;
   }
+  std::filesystem::path path(FLAGS_conf);
+  auto base = path.stem();
   std::string out;
-  RecordFileGenerator generator(&out, "", &config);
-  generator.generate();
-  writeFile(out, "out.h");
+  RecordFileGenerator gen(
+      &out,
+      base.string(),
+      config.collect(FLAGS_fields, FLAGS_addid));
+  gen.generate();
+  std::filesystem::path output(FLAGS_outputdir);
+  output /= base;
+  output += ".gen.h";
+  if (!writeFile(out, output.c_str())) {
+    CRYSTAL_LOG(ERROR) << "write file " << output << " failed";
+    return -1;
+  }
+  CRYSTAL_LOG(INFO) << "generate to file " << output;
   return 0;
 }

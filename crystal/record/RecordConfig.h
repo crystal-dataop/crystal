@@ -57,6 +57,8 @@ struct RecordConfig {
   std::vector<FieldConfig> fieldConfigs;
   std::map<std::string, size_t> fieldIndex;
 
+  std::vector<FieldConfig> collect(
+      const std::string& fields, bool addId = false);
   untyped_tuple::meta buildRecordMeta(
       const std::string& fields, bool addId = false);
 };

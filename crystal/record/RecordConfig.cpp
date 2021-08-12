@@ -182,7 +182,7 @@ untyped_tuple::meta buildTupleMeta(const std::vector<FieldConfig>& configs) {
   return meta;
 }
 
-untyped_tuple::meta RecordConfig::buildRecordMeta(
+std::vector<FieldConfig> RecordConfig::collect(
     const std::string& fields, bool addId) {
   std::vector<FieldConfig> configs;
   if (fields == "*") {
@@ -202,7 +202,12 @@ untyped_tuple::meta RecordConfig::buildRecordMeta(
     config.parse(dynamic::object("name", "__id")("type", "uint64"));
     configs.insert(configs.begin(), config);
   }
-  return buildTupleMeta(configs);
+  return configs;
+}
+
+untyped_tuple::meta RecordConfig::buildRecordMeta(
+    const std::string& fields, bool addId) {
+  return buildTupleMeta(collect(fields, addId));
 }
 
 } // namespace crystal

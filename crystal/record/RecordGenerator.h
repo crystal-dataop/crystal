@@ -56,9 +56,9 @@ class RecordClassGenerator : public StringGenerator {
 class RecordFileGenerator : public StringGenerator {
  public:
   RecordFileGenerator(std::string* out,
-                      const std::string& classname,
-                      const RecordConfig* config)
-      : StringGenerator(out), classname_(classname), config_(config) {}
+                      const std::string& filename,
+                      const std::vector<FieldConfig>& configs)
+      : StringGenerator(out), filename_(filename), configs_(configs) {}
 
   void generate();
   void generateHeader();
@@ -66,8 +66,8 @@ class RecordFileGenerator : public StringGenerator {
   void generateRecord();
 
  private:
-  std::string classname_;
-  const RecordConfig* config_;
+  std::string filename_;
+  std::vector<FieldConfig> configs_;
 };
 
 } // namespace crystal
