@@ -18,43 +18,20 @@
 
 #include <string_view>
 #include <tuple>
+#include <type_traits>
 
 #include "crystal/foundation/Logging.h"
 #include "crystal/foundation/Traits.h"
 #include "crystal/foundation/json.h"
-#include "crystal/serializer/record/Record.h"
+#include "crystal/record/RecordBase.h"
 #include "crystal/type/TypeTraits.h"
 
 namespace crystal {
 
-template <class T>
-inline typename std::enable_if<IsBool<T>::value>::type
-checkType(const dynamic& j) {
-  CRYSTAL_CHECK(j.isBool()) << j;
-}
-
-template <class T>
-inline typename std::enable_if<IsInt<T>::value>::type
-checkType(const dynamic& j) {
-  CRYSTAL_CHECK(j.isInt()) << j;
-}
-
-template <class T>
-inline typename std::enable_if<IsFloat<T>::value>::type
-checkType(const dynamic& j) {
-  CRYSTAL_CHECK(j.isDouble()) << j;
-}
-
-template <class T>
-inline typename std::enable_if<IsString<T>::value>::type
-checkType(const dynamic& j) {
-  CRYSTAL_CHECK(j.isString()) << j;
-}
-
 // IsValue
 //
 template <class T>
-inline typename std::enable_if<IsValue<T>::value, dynamic>::type
+inline std::enable_if_t<IsValue<T>::value, dynamic>
 encode(const T& value) {
   return value;
 }
@@ -64,61 +41,26 @@ inline dynamic encode(const char* value) {
 }
 
 inline void decode(const dynamic& j, bool& value) {
-  checkType<bool>(j);
   value = j.getBool();
 }
 
 template <class T>
-inline typename std::enable_if<IsInt<T>::value>::type
+inline std::enable_if_t<IsInt<T>::value>
 decode(const dynamic& j, T& value) {
-  checkType<T>(j);
   value = j.getInt();
 }
 
 template <class T>
-inline typename std::enable_if<IsFloat<T>::value>::type
+inline std::enable_if_t<IsFloat<T>::value>
 decode(const dynamic& j, T& value) {
-  checkType<T>(j);
   value = j.getDouble();
 }
 
 template <class T>
-inline typename std::enable_if<IsString<T>::value>::type
+inline std::enable_if_t<IsString<T>::value>
 decode(const dynamic& j, T& value) {
-  checkType<T>(j);
   value = j.getString();
 }
-
-// IsArray
-//
-template <class T>
-typename std::enable_if<IsArray<T>::value, dynamic>::type
-encode(const T& value) {
-  dynamic j = dynamic::array;
-  for (size_t i = 0; i < value.size(); ++i) {
-    j.push_back(encode(value.get(i)));
-  }
-  return j;
-}
-
-template <class T>
-typename std::enable_if<IsArray<T>::value>::type
-decode(const dynamic& j, T& value) {
-  CRYSTAL_CHECK_EQ(j.size(), value.size());
-  for (size_t i = 0; i < j.size(); ++i) {
-    typename T::value_type v;
-    decode(j[i], v);
-    value.set(i, v);
-  }
-}
-
-// Record
-//
-inline dynamic encode(const Record& value) {
-  return value.toDynamic();
-}
-
-void decode(const dynamic& j, Record& value);
 
 // std::pair
 //
@@ -138,14 +80,14 @@ inline void decode(const dynamic& j, std::pair<K, V>& value) {
 namespace detail {
 
 template <size_t I, class... Args>
-inline typename std::enable_if<I == 0>::type
+inline std::enable_if_t<I == 0>
 encodeImpl(dynamic& j, const std::tuple<Args...>& value) {
   typename std::tuple_element<0, std::tuple<Args...>>::type v;
   j[0] = encode(std::get<0>(value));
 }
 
 template <size_t I, class... Args>
-inline typename std::enable_if<is_positive(I)>::type
+inline std::enable_if_t<is_positive(I)>
 encodeImpl(dynamic& j, const std::tuple<Args...>& value) {
   typename std::tuple_element<I, std::tuple<Args...>>::type v;
   j[I] = encode(std::get<I>(value));
@@ -167,14 +109,14 @@ inline dynamic encode(const std::tuple<Args...>& value) {
 namespace detail {
 
 template <size_t I, class... Args>
-inline typename std::enable_if<I == 0>::type
+inline std::enable_if_t<I == 0>
 decodeImpl(const dynamic& j, std::tuple<Args...>& value) {
   typename std::tuple_element<0, std::tuple<Args...>>::type v;
   decode(j[0], std::get<0>(value));
 }
 
 template <size_t I, class... Args>
-inline typename std::enable_if<is_positive(I)>::type
+inline std::enable_if_t<is_positive(I)>
 decodeImpl(const dynamic& j, std::tuple<Args...>& value) {
   typename std::tuple_element<I, std::tuple<Args...>>::type v;
   decode(j[I], std::get<I>(value));
@@ -188,10 +130,29 @@ inline void decode(const dynamic& j, std::tuple<Args...>& value) {
   detail::decodeImpl<sizeof...(Args) - 1>(j, value);
 }
 
+// std::array
+//
+template <class T, size_t N>
+dynamic encode(const std::array<T, N>& value) {
+  dynamic j = dynamic::array;
+  for (auto& i : value) {
+    j.push_back(encode(i));
+  }
+  return j;
+}
+
+template <class T, size_t N>
+void decode(const dynamic& j, std::array<T, N>& value) {
+  CRYSTAL_CHECK(j.size() == N) << j;
+  for (size_t i = 0; i < N; ++i) {
+    decode(j[i], value[i]);
+  }
+}
+
 // IsSequence
 //
 template <class T>
-typename std::enable_if<IsSequence<T>::value, dynamic>::type
+std::enable_if_t<IsSequence<T>::value, dynamic>
 encode(const T& value) {
   dynamic j = dynamic::array;
   for (auto& i : value) {
@@ -201,7 +162,7 @@ encode(const T& value) {
 }
 
 template <class T>
-typename std::enable_if<IsSequence<T>::value>::type
+std::enable_if_t<IsSequence<T>::value>
 decode(const dynamic& j, T& value) {
   value.reserve(j.size());
   for (auto& i : j) {
@@ -214,7 +175,7 @@ decode(const dynamic& j, T& value) {
 // IsSet
 //
 template <class T>
-typename std::enable_if<IsSet<T>::value, dynamic>::type
+std::enable_if_t<IsSet<T>::value, dynamic>
 encode(const T& value) {
   dynamic j = dynamic::array;
   for (auto& i : value) {
@@ -224,7 +185,7 @@ encode(const T& value) {
 }
 
 template <class T>
-typename std::enable_if<IsSet<T>::value>::type
+std::enable_if_t<IsSet<T>::value>
 decode(const dynamic& j, T& value) {
   for (auto& i : j) {
     typename T::value_type v;
@@ -236,7 +197,7 @@ decode(const dynamic& j, T& value) {
 // IsMap
 //
 template <class T>
-typename std::enable_if<IsMap<T>::value, dynamic>::type
+std::enable_if_t<IsMap<T>::value, dynamic>
 encode(const T& value) {
   dynamic j = dynamic::object;
   for (auto& kv : value) {
@@ -246,7 +207,7 @@ encode(const T& value) {
 }
 
 template <class T>
-typename std::enable_if<IsMap<T>::value>::type
+std::enable_if_t<IsMap<T>::value>
 decode(const dynamic& j, T& value) {
   for (auto& kv : j.items()) {
     typename T::key_type k;
@@ -255,6 +216,54 @@ decode(const dynamic& j, T& value) {
     decode(kv.second, v);
     value.insert(std::make_pair(k, v));
   }
+}
+
+//////////////////////////////////////////////////////////////////////
+
+inline dynamic encode(const string& value) {
+  return std::string_view(value);
+}
+
+inline void decode(const dynamic& j, string& value) {
+  value = j.getString();
+}
+
+template <class T, size_t N>
+dynamic encode(const array<T, N>& value) {
+  dynamic j = dynamic::array;
+  for (auto& i : value) {
+    j.push_back(encode(i));
+  }
+  return j;
+}
+
+template <class T, size_t N>
+void decode(const dynamic& j, array<T, N>& value) {
+  CRYSTAL_CHECK(j.size() == N) << j;
+  for (size_t i = 0; i < N; ++i) {
+    decode(j[i], value[i]);
+  }
+}
+
+template <class T>
+dynamic encode(const vector<T>& value) {
+  dynamic j = dynamic::array;
+  for (auto& i : value) {
+    j.push_back(encode(i));
+  }
+  return j;
+}
+
+template <class T>
+void decode(const dynamic& j, vector<T>& value) {
+  value.write(j.size(), [&](T* p, size_t) {
+    T* it = p;
+    for (auto& i : j) {
+      T v;
+      decode(i, v);
+      new (it++) T(value);
+    }
+  });
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -74,8 +74,6 @@ struct IsValue {
 template <class T>
 struct IsSequence : std::false_type {};
 
-template <class T, size_t N>
-struct IsSequence<std::array<T, N>> : std::true_type {};
 template <class... Args>
 struct IsSequence<std::deque<Args...>> : std::true_type {};
 template <class... Args>
