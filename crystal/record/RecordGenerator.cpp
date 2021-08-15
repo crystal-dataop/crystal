@@ -63,6 +63,11 @@ void RecordClassGenerator::generate() {
   append(R"(
 class {{ classname }} : public RecordBase {
  public:
+  {{ classname }}() = default;
+
+  {{ classname }}(const untyped_tuple::meta& meta)
+      : RecordBase(meta) {}
+
   {{ classname }}(const untyped_tuple::meta& meta, void* buffer)
       : RecordBase(meta, buffer) {}
 )", {{"classname", classname_}});

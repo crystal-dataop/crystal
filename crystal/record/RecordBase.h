@@ -25,6 +25,11 @@ namespace crystal {
 
 class RecordBase {
  public:
+  RecordBase() = default;
+
+  RecordBase(const untyped_tuple::meta& meta)
+      : untyped_tuple_(meta) {}
+
   RecordBase(const untyped_tuple::meta& meta, void* buffer)
       : untyped_tuple_(meta, buffer) {}
 
