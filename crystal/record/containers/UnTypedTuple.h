@@ -19,6 +19,7 @@
 #include <cstdlib>
 #include <type_traits>
 
+#include "crystal/foundation/Range.h"
 #include "crystal/record/AllocMask.h"
 #include "crystal/record/OffsetPtr.h"
 #include "crystal/record/containers/Vector.h"
@@ -196,6 +197,21 @@ class untyped_tuple {
   template <class T>
   const T& get(size_t i) const {
     return *reinterpret_cast<const T*>(offset_ + meta_[i].offset);
+  }
+
+  template <class T>
+  Range<T*> getRange(size_t i) {
+    auto& em = meta_[i];
+    return em.count != 0
+      ? Range(reinterpret_cast<T*>(offset_ + em.offset), em.count)
+      : range(get<vector<T>>(i));
+  }
+  template <class T>
+  Range<const T*> getRange(size_t i) const {
+    auto& em = meta_[i];
+    return em.count != 0
+      ? Range(reinterpret_cast<const T*>(offset_ + em.offset), em.count)
+      : range(get<vector<T>>(i));
   }
 
   size_t size() const noexcept {
