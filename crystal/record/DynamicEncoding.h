@@ -246,6 +246,23 @@ void decode(const dynamic& j, array<T, N>& value) {
 }
 
 template <class T>
+dynamic encode(const Range<T>& value) {
+  dynamic j = dynamic::array;
+  for (auto& i : value) {
+    j.push_back(encode(i));
+  }
+  return j;
+}
+
+template <class T>
+void decode(const dynamic& j, Range<T>& value) {
+  CRYSTAL_CHECK(j.size() == value.size()) << j;
+  for (size_t i = 0; i < value.size(); ++i) {
+    decode(j[i], value[i]);
+  }
+}
+
+template <class T>
 dynamic encode(const vector<T>& value) {
   dynamic j = dynamic::array;
   for (auto& i : value) {
@@ -261,9 +278,21 @@ void decode(const dynamic& j, vector<T>& value) {
     for (auto& i : j) {
       T v;
       decode(i, v);
-      new (it++) T(value);
+      new (it++) T(v);
     }
   });
+}
+
+dynamic encode(const untyped_tuple& value);
+
+void decode(const dynamic& j, untyped_tuple& value);
+
+inline dynamic encode(const RecordBase& value) {
+  return encode(value.untypedTuple());
+}
+
+inline void decode(const dynamic& j, RecordBase& value) {
+  decode(j, value.untypedTuple());
 }
 
 //////////////////////////////////////////////////////////////////////

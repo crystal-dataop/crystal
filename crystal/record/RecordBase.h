@@ -41,6 +41,13 @@ class RecordBase {
     return untyped_tuple_.get<T>(i);
   }
 
+  untyped_tuple& untypedTuple() {
+    return untyped_tuple_;
+  }
+  const untyped_tuple& untypedTuple() const {
+    return untyped_tuple_;
+  }
+
  private:
   untyped_tuple untyped_tuple_;
 };
