@@ -284,8 +284,12 @@ void decode(const dynamic& j, vector<T>& value) {
 }
 
 dynamic encode(const untyped_tuple& value);
+dynamic encode(const untyped_tuple::meta& value);
+
+dynamic mergeTupleValueAndMeta(const dynamic& value, const dynamic& meta);
 
 void decode(const dynamic& j, untyped_tuple& value);
+void decode(const dynamic& j, untyped_tuple::meta& value);
 
 inline dynamic encode(const RecordBase& value) {
   return encode(value.untypedTuple());

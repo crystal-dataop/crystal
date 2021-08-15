@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-#include "crystal/record/RecordConfig.h"
 #include "crystal/record/test/RecordTest.h"
 
 using namespace crystal;
 
 TEST_F(RecordTest, config) {
-  dynamic j = parseCson(conf);
-  RecordConfig config = parseRecordConfig(j);
   EXPECT_EQ(4, config.fieldConfigs.size());
   EXPECT_STREQ("menuId", config.fieldConfigs[0].name().c_str());
   EXPECT_EQ(DataType::UINT64, config.fieldConfigs[0].type());
   EXPECT_STREQ("name", config.fieldConfigs[1].name().c_str());
   EXPECT_EQ(DataType::STRING, config.fieldConfigs[1].type());
-  EXPECT_STREQ("foods", config.fieldConfigs[2].name().c_str());
+  EXPECT_STREQ("food", config.fieldConfigs[2].name().c_str());
   EXPECT_EQ(DataType::TUPLE, config.fieldConfigs[2].type());
   EXPECT_EQ(4, config.fieldConfigs[2].tuple().size());
   EXPECT_STREQ("foodId", config.fieldConfigs[2].tuple()[0].name().c_str());

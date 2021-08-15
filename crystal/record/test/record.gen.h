@@ -104,6 +104,11 @@ class Record : public RecordBase {
     return get<string>(2);
   }
 
+  FoodRecord makeFoodRecord() {
+    return FoodRecord(
+        untyped_tuple::meta{untyped_tuple_.meta_[3].submeta});
+  }
+
   vector<FoodRecord>& food() {
     return get<vector<FoodRecord>>(3);
   }

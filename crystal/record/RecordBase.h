@@ -53,7 +53,7 @@ class RecordBase {
     return untyped_tuple_;
   }
 
- private:
+ protected:
   untyped_tuple untyped_tuple_;
 };
 

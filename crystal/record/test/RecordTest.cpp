@@ -14,31 +14,13 @@
  * limitations under the License.
  */
 
-#include "crystal/record/RecordConfig.h"
-#include "crystal/record/test/record.gen.h"
+#include "crystal/record/DynamicEncoding.h"
 #include "crystal/record/test/RecordTest.h"
 
 using namespace crystal;
 
 TEST_F(RecordTest, genRecord) {
-  dynamic j = parseCson(conf);
-  RecordConfig config = parseRecordConfig(j);
-  untyped_tuple::meta meta = config.buildRecordMeta("*", true);
-
-  Record record(meta);
-  {
-    record.__id() = 1;
-    record.menuId() = 100;
-    record.name() = "menu";
-    FoodRecord food(untyped_tuple::meta{meta[3].submeta});
-    food.foodId() = 2;
-    food.name() = "food";
-    food.price() = 20;
-    food.onsale() = true;
-    auto& foods = record.food();
-    foods.assign(1, food);
-    record.restaurantId() = 10;
-  }
+  Record record = MakeRecord();
   {
     EXPECT_EQ(1, record.get<uint64_t>(0));
     EXPECT_EQ(100, record.get<uint64_t>(1));
@@ -54,6 +36,35 @@ TEST_F(RecordTest, genRecord) {
   }
   {
     auto& t = record.toTuple();
+    EXPECT_EQ(1, get<0>(t));
+    EXPECT_EQ(100, get<1>(t));
+    EXPECT_STREQ("menu", get<2>(t).str().c_str());
+    auto& foods = get<3>(t);
+    EXPECT_EQ(1, foods.size());
+    auto& food = foods[0].toTuple();
+    EXPECT_EQ(2, get<0>(food));
+    EXPECT_STREQ("food", get<1>(food).str().c_str());
+    EXPECT_FLOAT_EQ(20, get<2>(food));
+    EXPECT_TRUE(get<3>(food));
+    EXPECT_EQ(10, get<4>(t));
+  }
+}
+
+TEST_F(RecordTest, encoding) {
+  Record record = MakeRecord();
+  dynamic j = encode(record);
+  EXPECT_STREQ(R"([1,100,"menu",[[2,"food",20,true]],10])", toJson(j).c_str());
+
+  dynamic m = encode(record.untypedTuple().meta_);
+  EXPECT_STREQ(R"([{"count":1,"type":"UINT64"},{"count":1,"type":"UINT64"},{"count":1,"type":"STRING"},{"count":0,"type":[{"type":"UINT64","count":1},{"type":"STRING","count":1},{"type":"FLOAT","count":1},{"type":"BOOL","count":1}]},{"count":1,"type":"UINT64"}])", toJson(m).c_str());
+
+  dynamic merged = mergeTupleValueAndMeta(j, m);
+  EXPECT_STREQ(R"([{"count":1,"value":1,"type":"UINT64"},{"count":1,"value":100,"type":"UINT64"},{"count":1,"value":"menu","type":"STRING"},{"count":0,"value":[[{"count":1,"value":2,"type":"UINT64"},{"count":1,"value":"food","type":"STRING"},{"count":1,"value":20,"type":"FLOAT"},{"count":1,"value":true,"type":"BOOL"}]],"type":[{"type":"UINT64","count":1},{"type":"STRING","count":1},{"type":"FLOAT","count":1},{"type":"BOOL","count":1}]},{"count":1,"value":10,"type":"UINT64"}])", toJson(merged).c_str());
+
+  Record dec;
+  decode(merged, dec);
+  {
+    auto& t = dec.toTuple();
     EXPECT_EQ(1, get<0>(t));
     EXPECT_EQ(100, get<1>(t));
     EXPECT_STREQ("menu", get<2>(t).str().c_str());

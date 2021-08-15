@@ -81,6 +81,15 @@ class {{ classname }} : public RecordBase {
 
 void RecordClassGenerator::generateMemberMethod(
     const FieldConfig& config, size_t i) {
+  if (config.type() == DataType::TUPLE) {
+    append(R"(
+  {{ basetype }} make{{ basetype }}() {
+    return {{ basetype }}(
+        untyped_tuple::meta{untyped_tuple_.meta_[{{ i }}].submeta});
+  }
+)", {{"basetype", toCamelCase(config.name()) + "Record"},
+     {"i", to<std::string>(i)}});
+  }
   append(R"(
   {{ type }}& {{ name }}() {
     return get<{{ type }}>({{ i }});
